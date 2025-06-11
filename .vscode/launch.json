@@ -1,0 +1,41 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "ServerApp",
+      "request": "launch",
+      "mainClass": "RPC_Project.ServerApp",
+      "projectName": "CNS4400_2788064a"
+    },
+    {
+      "type": "java",
+      "name": "IPAddressInput",
+      "request": "launch",
+      "mainClass": "RPC_Project.IPAddressInput",
+      "projectName": "CNS4400_2788064a"
+    },
+    {
+      "type": "java",
+      "name": "TestDB",
+      "request": "launch",
+      "mainClass": "RPC_Project.TestDB",
+      "projectName": "CNS4400_2788064a"
+    },
+    {
+      "type": "java",
+      "name": "Test",
+      "request": "launch",
+      "mainClass": "RPC_Project.Test",
+      "projectName": "CNS4400_2788064a"
+    },
+    {
+      "type": "java",
+      "name": "Chat UI",
+      "request": "launch",
+      "mainClass": "RPC_Project.Main",
+      "projectName": "CNS4400_2788064a",
+      "vmArgs": "--module-path \"C:/Program Files/Java/javafx-sdk-21.0.5/lib\" --add-modules javafx.controls,javafx.fxml"
+    }
+  ]
+}
