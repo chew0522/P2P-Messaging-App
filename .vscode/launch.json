@@ -3,6 +3,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "TestClient",
+      "request": "launch",
+      "mainClass": "RPC_Project.TestClient",
+      "projectName": "CNS4400_2788064a"
+    },
+    {
+      "type": "java",
       "name": "ServerApp",
       "request": "launch",
       "mainClass": "RPC_Project.ServerApp",

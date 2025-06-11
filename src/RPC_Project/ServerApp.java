@@ -14,7 +14,6 @@ public class ServerApp {
                 Socket socket = serverSocket.accept();
                 System.out.println("Client connected: " + socket.getInetAddress());
 
-                // Handle each client in a new thread (optional for multiple clients)
                 new Thread(() -> handleClient(socket)).start();
             }
 
@@ -68,4 +67,4 @@ public class ServerApp {
             System.out.println("Connection error: " + e.getMessage());
         }
     }
-}
+}        

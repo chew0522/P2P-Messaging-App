@@ -56,6 +56,41 @@ public class ChatClient {
         System.out.println("Server: " + dis.readUTF());
     }
 
+    // Add this to ChatClient.java
+
+    public String receiveText() throws IOException {
+        String type = dis.readUTF();
+        if (!type.equals("TEXT")) {
+            throw new IOException("Expected TEXT, but received: " + type);
+        }
+        return dis.readUTF();
+    }
+
+    public void receiveFile(String saveDirectory) throws IOException {
+        String type = dis.readUTF();
+        if (!type.equals("FILE")) {
+            throw new IOException("Expected FILE, but received: " + type);
+        }
+
+        String filename = dis.readUTF();
+        long fileSize = dis.readLong();
+
+        File saveFile = new File(saveDirectory, "received_" + filename);
+        try (FileOutputStream fos = new FileOutputStream(saveFile)) {
+            byte[] buffer = new byte[4096];
+            int read;
+            long remaining = fileSize;
+
+            while (remaining > 0 && (read = dis.read(buffer, 0, (int) Math.min(buffer.length, remaining))) != -1) {
+                fos.write(buffer, 0, read);
+                remaining -= read;
+            }
+        }
+
+        System.out.println("File received and saved to: " + saveFile.getAbsolutePath());
+    }
+
+
     public void close() throws IOException {
         dis.close();
         dos.close();

@@ -85,6 +85,7 @@ public class ChatUI {
         root.setLeft(leftPane);
         root.setTop(topToolbar);
         setMessagePane();
+        startReceivingMessages(messagesPane);
 
         scene = new Scene(root, 1000, 600);
     }
@@ -531,7 +532,28 @@ public class ChatUI {
 
     }
 
+    public void startReceivingMessages(VBox chatBox) {
+        new Thread(() -> {
+            try {
+                while (true) {
+                    String message = client.receiveText(); // This blocks until server sends something
+                    Platform.runLater(() -> {
+                        chatBox.getChildren().add(new Label("Server: " + message));
+                        chatScrollPane.setVvalue(1.0); // scroll to bottom
+                    });
+                }
+            } catch (IOException e) {
+                Platform.runLater(() -> {
+                    chatBox.getChildren().add(new Label("Connection closed or error: " + e.getMessage()));
+                });
+            }
+        }).start();
+    }
+
+
     public Scene getScene(){
         return scene;
     }
+
+
 }
