@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 public class TestClient {
     public static void main(String[] args) {
-        ChatClient client = new ChatClient("localhost"); // Update if using a different server IP
+        ChatClient client = new ChatClient("192.168.165.163"); // Update if using a different server IP
 
         try {
             client.connect(); // Connect to the server

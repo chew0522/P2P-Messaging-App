@@ -85,7 +85,7 @@ public class ChatUI {
         root.setLeft(leftPane);
         root.setTop(topToolbar);
         setMessagePane();
-        startReceivingMessages(messagesPane);
+        startReceivingMessages();
 
         scene = new Scene(root, 1000, 600);
     }
@@ -366,6 +366,7 @@ public class ChatUI {
             String caption = captionField != null ? captionField.getText() : "";
 
             addFileBox(file, caption);
+            
             // Clear input and preview
             filePreviewBox.getChildren().clear();
             filePreviewBox.setVisible(false);
@@ -532,19 +533,43 @@ public class ChatUI {
 
     }
 
-    public void startReceivingMessages(VBox chatBox) {
+    public void startReceivingMessages() {
+        
         new Thread(() -> {
             try {
                 while (true) {
-                    String message = client.receiveText(); // This blocks until server sends something
+                    VBox messageBox = new VBox(5);
+                    Text messageText = new Text(client.receiveText());
+                    messageText.setWrappingWidth(300);
+                    messageBox.getChildren().add(messageText);
+
+
+                    messageBox.setPadding(new Insets(10));
+                    messageBox.setMaxWidth(400);
+                    messageBox.setStyle(
+                        "-fx-background-color: #DCF8C6;" + // Light green (like WhatsApp sender)
+                        "-fx-background-radius: 16 4 16 16;" + // top-left, top-right, bottom-right, bottom-left
+                        "-fx-border-radius: 16 4 16 16;" +
+                        "-fx-border-color: #ffffff;" + // Optional border
+                        "-fx-border-width: 1;"
+                    );
+
+                    HBox wrapper = new HBox(messageBox);
+                    wrapper.setAlignment(Pos.CENTER_LEFT); // Push to right side
+                    wrapper.setPadding(new Insets(5, 10, 5, 10)); // Add spacing
+
+                    messagesPane.getChildren().add(wrapper);
+
+                    // Scroll to bottom after layout update
+                    messagesPane.layout();
                     Platform.runLater(() -> {
-                        chatBox.getChildren().add(new Label("Server: " + message));
-                        chatScrollPane.setVvalue(1.0); // scroll to bottom
+                        messagesPane.layout(); // Ensure layout is refreshed
+                        Platform.runLater(() -> chatScrollPane.setVvalue(1.0)); // Scroll after layout
                     });
                 }
             } catch (IOException e) {
                 Platform.runLater(() -> {
-                    chatBox.getChildren().add(new Label("Connection closed or error: " + e.getMessage()));
+                    messagesPane.getChildren().add(new Label("Connection closed or error: " + e.getMessage()));
                 });
             }
         }).start();
