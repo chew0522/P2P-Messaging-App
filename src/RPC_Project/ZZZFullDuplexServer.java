@@ -3,7 +3,7 @@ package RPC_Project;
 import java.io.*;
 import java.net.*;
 
-public class FullDuplexServer {
+public class ZZZFullDuplexServer {
     public static void main(String[] args) {
         final int PORT = 5000;
 

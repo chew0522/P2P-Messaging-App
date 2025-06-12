@@ -2,14 +2,14 @@ package RPC_Project;
 import java.io.*;
 import java.net.*;
 
-public class ChatClient {
+public class ZZZChatClient {
     public static final int PORT = 5000;
     Socket socket;
     String serverIP;
     DataInputStream dis;
     DataOutputStream dos;
 
-    ChatClient(String serverIP){
+    ZZZChatClient(String serverIP){
         this.serverIP = serverIP;
     }
 

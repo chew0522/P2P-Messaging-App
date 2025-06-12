@@ -2,6 +2,7 @@ package RPC_Project;
 
 import java.io.IOException;
 
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -20,15 +21,18 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.util.Duration;
 
 public class IPAddressInput {
 
-    private final int PORT = 5000;
     private Scene scene;
     private Main app;
     private PeerClientClass currentChatServer;
     private PeerClientClass currentChatClient;
     private Main.ConnectionCallback connectionCallback;
+    private boolean hasAccepted = false; 
+    private boolean hasConnected = false; 
+    private String ipAddress = "";
 
     public IPAddressInput(Main app, Main.ConnectionCallback callback) {
         this.app = app;
@@ -37,12 +41,6 @@ public class IPAddressInput {
     }
 
     public void createScene() {
-
-        try {
-            currentChatClient = PeerClientClass.waitForConnection(PORT);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         // --- UI Elements ---
 
         Label ipLabel = new Label("Enter IP address:");
@@ -94,8 +92,10 @@ public class IPAddressInput {
             "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 10, 0, 0, 0);"
         ));
 
+        
+
         connectButton.setOnAction(event -> {
-            String ipAddress = ipTextField.getText().trim();
+            ipAddress = ipTextField.getText().trim();
 
             if (ipAddress.isEmpty()) {
                 System.out.println("IP address is empty.");
@@ -104,38 +104,32 @@ public class IPAddressInput {
 
             connectButton.setDisable(true);
 
+            // Start server side listening in the background
             new Thread(() -> {
-                
-                boolean connected = false;
-
                 try {
-                    PeerClientClass client = PeerClientClass.connectTo(ipAddress, PORT);
-                    connected = true;
-                    currentChatClient = client;
+                    currentChatServer = PeerClientClass.waitForConnection();
+                    System.out.println("Incoming connection established.");
+
+                    hasAccepted = true;
+                    checkAndNotify();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+
+            new Thread(() -> {
+                try {
+                    currentChatClient = PeerClientClass.connectTo(ipAddress);
+                    hasConnected = true;
+                    checkAndNotify();
                 } catch (IOException e) {
                     System.err.println("Failed to connect: " + e.getMessage());
                 }
-
-                final boolean wasConnected = connected;
-
-                Platform.runLater(() -> {
-                    if (wasConnected) {
-                        showAlert(AlertType.INFORMATION, "Connection Status", "Connected!",
-                            "Successfully connected to " + ipAddress + ".");
-                        if (connectionCallback != null) {
-                            connectionCallback.onConnectionSuccess(currentChatServer, currentChatClient);
-                        }
-                    } else {
-                        showAlert(AlertType.ERROR, "Connection Status", "Connection Failed!",
-                            "Could not connect to " + ipAddress + ".\nPlease ensure the server is running and the IP is correct.");
-                        if (connectionCallback != null) {
-                            connectionCallback.onConnectionFailed();
-                        }
-                    }
-                    connectButton.setDisable(false);
-                });
+                
             }).start();
         });
+        connectButton.setDisable(false);
 
         Image image = new Image(getClass().getResource("/images/IPAddressLogo.png").toExternalForm());
         ImageView imageView = new ImageView(image);
@@ -152,6 +146,8 @@ public class IPAddressInput {
         root.getChildren().addAll(imageView, ipLabel, ipTextField, connectButton);
 
         scene = new Scene(root, 1000, 600);
+
+        
     }
 
     public Scene getScene() {
@@ -165,4 +161,31 @@ public class IPAddressInput {
         alert.setContentText(content);
         alert.showAndWait();
     }
+
+   private void checkAndNotify() {
+        Platform.runLater(() -> {
+            if (hasConnected && hasAccepted) {
+                showAlert(AlertType.INFORMATION, "Connection Status", "Connected!",
+                    "Successfully connected to " + ipAddress + ".");
+                if (connectionCallback != null) {
+                    connectionCallback.onConnectionSuccess(currentChatServer, currentChatClient);
+                }
+            } else {
+                // Delay error alert to give time for potential connection completion
+                PauseTransition delay = new PauseTransition(Duration.seconds(1)); // 1-second delay
+                delay.setOnFinished(event -> {
+                    // Re-check after delay to avoid false failure
+                    if (!(hasConnected && hasAccepted)) {
+                        showAlert(AlertType.ERROR, "Connection Status", "Connection Failed!",
+                            "Could not connect to " + ipAddress + ".\nPlease ensure the server is running and the IP is correct.");
+                        if (connectionCallback != null) {
+                            connectionCallback.onConnectionFailed();
+                        }
+                    }
+                });
+                delay.play();
+            }
+        });
+    }
+
 }

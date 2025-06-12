@@ -87,7 +87,7 @@ public class ChatUI {
         root.setLeft(leftPane);
         root.setTop(topToolbar);
         setMessagePane();
-        startReceivingMessages();
+        startReceiving("received_" + server.getFileName());
 
         scene = new Scene(root, 1000, 600);
     }
@@ -353,21 +353,16 @@ public class ChatUI {
         preview.setSpacing(15);
         preview.setAlignment(Pos.CENTER_LEFT);
 
-        // Emoji + caption box
-        HBox captionBox = new HBox();
-        Button emojiButton = new Button("😊");
-        captionField = new TextField();
-        captionField.setPromptText("Write a caption...");
-        
-        emojiButton.setOnAction(e ->{
-            showEmojiPopup(captionField, emojiButton);
-        });
-
         Button sendButton = new Button("➡️");
         sendButton.setOnAction(e -> {
             String caption = captionField != null ? captionField.getText() : "";
 
-            addFileBox(file, caption);
+            addFileBox(file);
+            try {
+                client.sendFile(file.getAbsolutePath());
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
             
             // Clear input and preview
             filePreviewBox.getChildren().clear();
@@ -375,11 +370,8 @@ public class ChatUI {
             selectedFile = null;
             
         });
-        captionBox.getChildren().addAll(emojiButton, captionField, sendButton);
-        captionBox.setSpacing(10);
-        captionBox.setAlignment(Pos.CENTER_LEFT);
 
-        filePreviewBox.getChildren().addAll(preview, captionBox);
+        filePreviewBox.getChildren().addAll(preview, sendButton);
         filePreviewBox.setSpacing(10);
         filePreviewBox.setVisible(true);
         filePreviewPopup.show(
@@ -421,8 +413,40 @@ public class ChatUI {
         });
     }
 
+    private void addReceivedMessage(String text) {
+        
+        VBox messageBox = new VBox(5);
+        Text messageText = new Text(text);
+        messageText.setWrappingWidth(300);
+        messageBox.getChildren().add(messageText);
 
-    private void addFileBox(File file, String caption){
+
+        messageBox.setPadding(new Insets(10));
+        messageBox.setMaxWidth(400);
+        messageBox.setStyle(
+            "-fx-background-color: #DCF8C6;" + // Light green (like WhatsApp sender)
+            "-fx-background-radius: 16 16 4 16;" + // top-left, top-right, bottom-right, bottom-left
+            "-fx-border-radius: 16 16 4 16;" +
+            "-fx-border-color: #A5D6A7;" + // Optional border
+            "-fx-border-width: 1;"
+        );
+
+        HBox wrapper = new HBox(messageBox);
+        wrapper.setAlignment(Pos.CENTER_LEFT); // Push to right side
+        wrapper.setPadding(new Insets(5, 10, 5, 10)); // Add spacing
+
+        messagesPane.getChildren().add(wrapper);
+
+        // Scroll to bottom after layout update
+        messagesPane.layout();
+        Platform.runLater(() -> {
+            messagesPane.layout(); // Ensure layout is refreshed
+            Platform.runLater(() -> chatScrollPane.setVvalue(1.0)); // Scroll after layout
+        });
+    }
+
+
+    private void addFileBox(File file){
         String fileName = file.getName();
         long fileSizeBytes = file.length();
         String fileSize = humanReadableByteCountSI(fileSizeBytes);
@@ -482,18 +506,9 @@ public class ChatUI {
 
         // Set the action for the download button
         downloadButton.setOnAction(e -> {
-            // We need a Stage reference for the FileChooser.
-            // In a real application, you'd pass your main stage here,
-            // or get it from the scene the button is part of.
-            // For demonstration, we'll try to get it from the button's scene,
-            // or fall back to a new Stage if necessary (not ideal for real apps).
             Stage ownerStage = (Stage) downloadButton.getScene().getWindow();
             if (ownerStage == null) {
-                // Fallback for cases where the button isn't yet attached to a scene
-                // Or if you are running this in a context without a main stage
                 ownerStage = new Stage();
-                // ownerStage.initModality(Modality.APPLICATION_MODAL); // Uncomment for modal behavior
-                // ownerStage.initOwner(primaryStage); // If you have a primary stage accessible
             }
 
             FileChooser fileChooser = new FileChooser();
@@ -516,68 +531,147 @@ public class ChatUI {
             }
         });
 
-        Text captionDisplay = new Text(caption);
-        captionDisplay.setWrappingWidth(300); // required for wrapping!
-
-        VBox captionBox = new VBox(captionDisplay);
-        captionBox.setMaxWidth(300); // set max width on wrapper too
-
 
         fileInfoWithIcon.getChildren().addAll(iconLabel, fileInfo, downloadButton);
-        fileBox.getChildren().addAll(fileInfoWithIcon, captionBox);
+        fileBox.getChildren().addAll(fileInfoWithIcon);
 
         messagesPane.getChildren().add(wrapper);
         Platform.runLater(() -> {
             messagesPane.layout(); 
             chatScrollPane.setVvalue(1.0);
         });
-
-
     }
 
-    public void startReceivingMessages() {
-        
+    private void addReceivedFileBox(File file){
+        String fileName = file.getName();
+        long fileSizeBytes = file.length();
+        String fileSize = humanReadableByteCountSI(fileSizeBytes);
+        String fileType;
+        try {
+            fileType = Files.probeContentType(file.toPath());
+        } catch (IOException e) {
+            System.err.println("Error probing file type for " + fileName + ": " + e.getMessage());
+            fileType = "Unknown (Error)"; // Assign a default in case of error
+        }
+
+        // Icon (based on extension)
+        String extension = "";
+        int lastDotIndex = fileName.lastIndexOf(".");
+        if (lastDotIndex > 0 && lastDotIndex < fileName.length() - 1) {
+            extension = fileName.substring(lastDotIndex + 1).toLowerCase();
+        }
+        String icon = switch (extension) {
+            case "pdf" -> "📄";
+            case "doc", "docx" -> "📝";
+            case "xls", "xlsx" -> "📊";
+            case "png", "jpg", "jpeg", "gif" -> "🖼️";
+            case "mp4", "avi", "mov", "mkv" -> "🎬";
+            default -> "📁";
+        };
+
+        Label iconLabel = new Label(icon);
+        iconLabel.setStyle("-fx-font-size: 40px;");
+
+        VBox fileBox = new VBox(5);
+        fileBox.setPadding(new Insets(10));
+        fileBox.setMaxWidth(400);
+        fileBox.setStyle(
+            "-fx-background-color: #DCF8C6;" + // light green (WhatsApp-like)
+            "-fx-background-radius: 16 16 4 16;" + // top-left, top-right, bottom-right, bottom-left
+            "-fx-border-radius: 16 16 4 16;" +
+            "-fx-border-color: #A5D6A7;" + // optional border
+            "-fx-border-width: 1;"
+        );
+        HBox wrapper = new HBox(fileBox);
+        wrapper.setAlignment(Pos.CENTER_LEFT); // Push to right side
+        wrapper.setPadding(new Insets(5, 10, 5, 10)); // Add spacing
+        HBox fileInfoWithIcon = new HBox(5);
+        Label nameLabel = new Label(fileName);
+        nameLabel.setStyle("-fx-text-fill: black;");
+
+        Label sizeLabel = new Label(fileSize);
+        sizeLabel.setStyle("-fx-text-fill: black;");
+
+        Label typeLabel = new Label(fileType != null ? fileType : "Unknown");
+        typeLabel.setStyle("-fx-text-fill: black;");
+
+        VBox fileInfo = new VBox(nameLabel, sizeLabel, typeLabel);
+
+        Button downloadButton = new Button("⬇");
+        downloadButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;");
+
+        // Set the action for the download button
+        downloadButton.setOnAction(e -> {
+            Stage ownerStage = (Stage) downloadButton.getScene().getWindow();
+            if (ownerStage == null) {
+                ownerStage = new Stage();
+            }
+
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Save File");
+            fileChooser.setInitialFileName(file.getName()); // Suggest original file name
+
+            // Show save dialog and get the selected destination file
+            File destinationFile = fileChooser.showSaveDialog(ownerStage);
+
+            if (destinationFile != null) {
+                try {
+                    // Copy the attachment file to the chosen destination
+                    Files.copy(file.toPath(), destinationFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    System.out.println("File downloaded successfully to: " + destinationFile.getAbsolutePath());
+                } catch (IOException ex) {
+                    System.err.println("Error downloading file: " + ex.getMessage());
+                }
+            } else {
+                System.out.println("File download cancelled by user.");
+            }
+        });
+
+
+        fileInfoWithIcon.getChildren().addAll(iconLabel, fileInfo, downloadButton);
+        fileBox.getChildren().addAll(fileInfoWithIcon);
+
+        messagesPane.getChildren().add(wrapper);
+        Platform.runLater(() -> {
+            messagesPane.layout(); 
+            chatScrollPane.setVvalue(1.0);
+        });
+    }
+
+    public void startReceiving(String saveDirectory){
         new Thread(() -> {
             try {
                 while (true) {
-                    Text messageText = new Text(server.receiveText());
-                    Platform.runLater(() -> {
-                        VBox messageBox = new VBox(5);
-                        messageText.setWrappingWidth(300);
-                        messageBox.getChildren().add(messageText);
+                    String type = server.getDIS().readUTF();
 
-
-                        messageBox.setPadding(new Insets(10));
-                        messageBox.setMaxWidth(400);
-                        messageBox.setStyle(
-                            "-fx-background-color: #DCF8C6;" + // Light green (like WhatsApp sender)
-                            "-fx-background-radius: 16 4 16 16;" + // top-left, top-right, bottom-right, bottom-left
-                            "-fx-border-radius: 16 4 16 16;" +
-                            "-fx-border-color: #ffffff;" + // Optional border
-                            "-fx-border-width: 1;"
-                        );
-
-                        HBox wrapper = new HBox(messageBox);
-                        wrapper.setAlignment(Pos.CENTER_LEFT); // Push to right side
-                        wrapper.setPadding(new Insets(5, 10, 5, 10)); // Add spacing
-
-                        messagesPane.getChildren().add(wrapper);
-
-                        // Scroll to bottom after layout update
-                        messagesPane.layout();
-
-                    
-                        messagesPane.layout(); // Ensure layout is refreshed
-                        Platform.runLater(() -> chatScrollPane.setVvalue(1.0)); // Scroll after layout
-                    });
+                    switch(type){
+                        case "TEXT" -> {
+                            String message = server.receiveText();
+                            Platform.runLater(() -> {
+                                addReceivedMessage(message);
+                            });
+                        }
+                        case "FILE" -> {
+                            File receivedFile = server.receiveFile(saveDirectory);
+                            Platform.runLater(() -> {
+                                addReceivedFileBox(receivedFile);
+                            
+                                messagesPane.layout(); // Ensure layout is refreshed
+                                Platform.runLater(() -> chatScrollPane.setVvalue(1.0)); // Scroll after layout
+                            });
+                        }
+                        default -> System.err.println("Unknown message type: " + type);  
+                    }
                 }
+
             } catch (IOException e) {
                 Platform.runLater(() -> {
-                    messagesPane.getChildren().add(new Label("Connection closed or error: " + e.getMessage()));
+                    System.err.println("Error receiving file: " + e.getMessage());
                 });
             }
         }).start();
     }
+
 
 
     public Scene getScene(){

@@ -38,7 +38,7 @@ public class ZZZChatUI {
     private Stage primaryStage;
     private StackPane overlayPane;
     private File selectedFile = null;
-    private ChatClient client;
+    private ZZZChatClient client;
     
     public ZZZChatUI(Main app) {
         this.app = app;

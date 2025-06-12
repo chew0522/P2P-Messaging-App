@@ -3,7 +3,7 @@ package RPC_Project;
 import java.io.*;
 import java.net.*;
 
-public class FullDuplexClient {
+public class ZZZFullDuplexClient {
     public static void main(String[] args) {
         final String SERVER_IP = "192.168.165.163"; // Or server's IP address
         final int PORT = 5000;

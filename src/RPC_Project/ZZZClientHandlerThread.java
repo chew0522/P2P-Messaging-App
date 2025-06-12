@@ -3,10 +3,10 @@ package RPC_Project;
 import java.io.*;
 import java.net.*;
 
-public class ClientHandlerThread implements Runnable {
+public class ZZZClientHandlerThread implements Runnable {
     private final Socket socket;
 
-    public ClientHandlerThread(Socket socket) {
+    public ZZZClientHandlerThread(Socket socket) {
         this.socket = socket;
     }
 
