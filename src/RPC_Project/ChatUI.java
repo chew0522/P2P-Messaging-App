@@ -87,7 +87,7 @@ public class ChatUI {
         root.setLeft(leftPane);
         root.setTop(topToolbar);
         setMessagePane();
-        //startReceivingMessages();
+        startReceivingMessages();
 
         scene = new Scene(root, 1000, 600);
     }

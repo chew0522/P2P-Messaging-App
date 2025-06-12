@@ -39,7 +39,7 @@ public class IPAddressInput {
     public void createScene() {
 
         try {
-            PeerClientClass server = PeerClientClass.waitForConnection(PORT);
+            currentChatClient = PeerClientClass.waitForConnection(PORT);
         } catch (IOException e) {
             e.printStackTrace();
         }
