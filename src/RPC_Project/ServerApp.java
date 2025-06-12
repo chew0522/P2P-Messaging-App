@@ -39,7 +39,7 @@ public class ServerApp {
                 if (type.equals("TEXT")) {
                     String message = dis.readUTF();
                     System.out.println("Text received: " + message);
-                    dos.writeUTF("Text received successfully.");
+                    dos.writeUTF("Received: " + message);
                 } else if (type.equals("FILE")) {
                     String filename = dis.readUTF();
                     long fileSize = dis.readLong();

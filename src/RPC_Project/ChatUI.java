@@ -33,7 +33,8 @@ public class ChatUI {
     
     private Main app;
     private Scene scene;
-    private ChatClient client;
+    private PeerClientClass server;
+    private PeerClientClass client;
     private Stage primaryStage;
     private Button attachButton;
     private VBox filePreviewBox;
@@ -46,6 +47,7 @@ public class ChatUI {
 
     public ChatUI(Main app){
         this.app = app;
+        this.server = app.getActiveServer();
         this.client = app.getActiveClient();
         createScene();
     }
@@ -85,7 +87,7 @@ public class ChatUI {
         root.setLeft(leftPane);
         root.setTop(topToolbar);
         setMessagePane();
-        startReceivingMessages();
+        //startReceivingMessages();
 
         scene = new Scene(root, 1000, 600);
     }
@@ -538,31 +540,33 @@ public class ChatUI {
         new Thread(() -> {
             try {
                 while (true) {
-                    VBox messageBox = new VBox(5);
-                    Text messageText = new Text(client.receiveText());
-                    messageText.setWrappingWidth(300);
-                    messageBox.getChildren().add(messageText);
-
-
-                    messageBox.setPadding(new Insets(10));
-                    messageBox.setMaxWidth(400);
-                    messageBox.setStyle(
-                        "-fx-background-color: #DCF8C6;" + // Light green (like WhatsApp sender)
-                        "-fx-background-radius: 16 4 16 16;" + // top-left, top-right, bottom-right, bottom-left
-                        "-fx-border-radius: 16 4 16 16;" +
-                        "-fx-border-color: #ffffff;" + // Optional border
-                        "-fx-border-width: 1;"
-                    );
-
-                    HBox wrapper = new HBox(messageBox);
-                    wrapper.setAlignment(Pos.CENTER_LEFT); // Push to right side
-                    wrapper.setPadding(new Insets(5, 10, 5, 10)); // Add spacing
-
-                    messagesPane.getChildren().add(wrapper);
-
-                    // Scroll to bottom after layout update
-                    messagesPane.layout();
+                    Text messageText = new Text(server.receiveText());
                     Platform.runLater(() -> {
+                        VBox messageBox = new VBox(5);
+                        messageText.setWrappingWidth(300);
+                        messageBox.getChildren().add(messageText);
+
+
+                        messageBox.setPadding(new Insets(10));
+                        messageBox.setMaxWidth(400);
+                        messageBox.setStyle(
+                            "-fx-background-color: #DCF8C6;" + // Light green (like WhatsApp sender)
+                            "-fx-background-radius: 16 4 16 16;" + // top-left, top-right, bottom-right, bottom-left
+                            "-fx-border-radius: 16 4 16 16;" +
+                            "-fx-border-color: #ffffff;" + // Optional border
+                            "-fx-border-width: 1;"
+                        );
+
+                        HBox wrapper = new HBox(messageBox);
+                        wrapper.setAlignment(Pos.CENTER_LEFT); // Push to right side
+                        wrapper.setPadding(new Insets(5, 10, 5, 10)); // Add spacing
+
+                        messagesPane.getChildren().add(wrapper);
+
+                        // Scroll to bottom after layout update
+                        messagesPane.layout();
+
+                    
                         messagesPane.layout(); // Ensure layout is refreshed
                         Platform.runLater(() -> chatScrollPane.setVvalue(1.0)); // Scroll after layout
                     });

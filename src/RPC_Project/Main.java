@@ -15,7 +15,8 @@ public class Main extends Application {
     private String url = "jdbc:mysql://localhost:3306/CNS4400";
     private String user = "root";
     private String password = "223763";
-    private ChatClient activeChatClient;
+    private PeerClientClass activeChatClient;
+    private PeerClientClass activeChatServer;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -47,18 +48,19 @@ public class Main extends Application {
     }
 
     public interface ConnectionCallback {
-        void onConnectionSuccess(ChatClient client);
+        void onConnectionSuccess(PeerClientClass server, PeerClientClass client);
         void onConnectionFailed();
     }
     
     public void showIPAddressInput() {
         IPAddressInput ipInputUI = new IPAddressInput(this, new ConnectionCallback() {
             @Override
-            public void onConnectionSuccess(ChatClient client) {
+            public void onConnectionSuccess(PeerClientClass server, PeerClientClass client) {
                 // When connection is successful, store the client and proceed
+                activeChatServer = server;
                 activeChatClient = client; // Store the client in Main
                 System.out.println("Callback: Connection successful! Navigating to Login Page.");
-                showLoginPage(); // <--- NEW: Call method to show Chat UI
+                showChatUI(""); // <--- NEW: Call method to show Chat UI
             }
 
             @Override
@@ -101,7 +103,11 @@ public class Main extends Application {
         return dbManager;
     }
 
-    public ChatClient getActiveClient(){
+    public PeerClientClass getActiveServer(){
+        return activeChatServer;
+    }
+
+    public PeerClientClass getActiveClient(){
         return activeChatClient;
     }
 

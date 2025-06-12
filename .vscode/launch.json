@@ -3,6 +3,27 @@
   "configurations": [
     {
       "type": "java",
+      "name": "PeerClient",
+      "request": "launch",
+      "mainClass": "RPC_Project.PeerClient",
+      "projectName": "CNS4400_2788064a"
+    },
+    {
+      "type": "java",
+      "name": "FullDuplexClient",
+      "request": "launch",
+      "mainClass": "RPC_Project.FullDuplexClient",
+      "projectName": "CNS4400_2788064a"
+    },
+    {
+      "type": "java",
+      "name": "FullDuplexServer",
+      "request": "launch",
+      "mainClass": "RPC_Project.FullDuplexServer",
+      "projectName": "CNS4400_2788064a"
+    },
+    {
+      "type": "java",
       "name": "TestClient",
       "request": "launch",
       "mainClass": "RPC_Project.TestClient",

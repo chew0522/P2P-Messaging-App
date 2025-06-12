@@ -23,9 +23,11 @@ import javafx.scene.text.FontWeight;
 
 public class IPAddressInput {
 
+    private final int PORT = 5000;
     private Scene scene;
     private Main app;
-    private ChatClient currentChatClient;
+    private PeerClientClass currentChatServer;
+    private PeerClientClass currentChatClient;
     private Main.ConnectionCallback connectionCallback;
 
     public IPAddressInput(Main app, Main.ConnectionCallback callback) {
@@ -35,6 +37,12 @@ public class IPAddressInput {
     }
 
     public void createScene() {
+
+        try {
+            PeerClientClass server = PeerClientClass.waitForConnection(PORT);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         // --- UI Elements ---
 
         Label ipLabel = new Label("Enter IP address:");
@@ -97,11 +105,11 @@ public class IPAddressInput {
             connectButton.setDisable(true);
 
             new Thread(() -> {
-                ChatClient client = new ChatClient(ipAddress);
+                
                 boolean connected = false;
 
                 try {
-                    client.connect();
+                    PeerClientClass client = PeerClientClass.connectTo(ipAddress, PORT);
                     connected = true;
                     currentChatClient = client;
                 } catch (IOException e) {
@@ -115,7 +123,7 @@ public class IPAddressInput {
                         showAlert(AlertType.INFORMATION, "Connection Status", "Connected!",
                             "Successfully connected to " + ipAddress + ".");
                         if (connectionCallback != null) {
-                            connectionCallback.onConnectionSuccess(currentChatClient);
+                            connectionCallback.onConnectionSuccess(currentChatServer, currentChatClient);
                         }
                     } else {
                         showAlert(AlertType.ERROR, "Connection Status", "Connection Failed!",
