@@ -6,14 +6,16 @@ public class User{
     private Main app;
     private int user_id;
     private String username;
-    private DatabaseManager dbManager = app.getDatabaseManager();
+    private DatabaseManager dbManager;
     private String email;
     private String password;
     
 
-    public User(String email, String password){
+    public User(Main app, String email, String password){
+        this.app = app;
         this.email = email;
         this.password = password;
+        this.dbManager = app.getDatabaseManager();
         setUserID(email, password);
         setUsername(email, password);
     }

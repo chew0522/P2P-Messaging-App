@@ -43,7 +43,7 @@ public class ChatUI {
     private Scene scene;
     private PeerClientClass server;
     private PeerClientClass client;
-    private DatabaseManager dbManager = app.getDatabaseManager();
+    private DatabaseManager dbManager;
     private Stage primaryStage;
     private Button attachButton;
     private VBox filePreviewBox;
@@ -59,6 +59,7 @@ public class ChatUI {
         this.app = app;
         this.server = app.getActiveServer();
         this.client = app.getActiveClient();
+        this.dbManager = app.getDatabaseManager();
         this.sender = app.getSender();
         this.receiver = app.getReceiver();
         createScene();
@@ -672,12 +673,24 @@ public class ChatUI {
                             String message = server.receiveText();
                             Platform.runLater(() -> {
                                 addReceivedMessage(message);
+                                try {
+                                    dbManager.insertTextMessage(receiver.getUserID(), sender.getUserID(), message);
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
+                                }
                             });
                         }
                         case "FILE" -> {
                             File receivedFile = server.receiveFile(saveDirectory);
                             Platform.runLater(() -> {
                                 addReceivedFileBox(receivedFile);
+                                try {
+                                    dbManager.insertFileMessage(receiver.getUserID(), sender.getUserID(), receivedFile);
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             
                                 messagesPane.layout(); // Ensure layout is refreshed
                                 Platform.runLater(() -> chatScrollPane.setVvalue(1.0)); // Scroll after layout

@@ -20,13 +20,17 @@ public class LoginPage {
     private Main app;
     private DatabaseManager dbManager;
     private Main.LoginCallBack loginCallBack;
-    private PeerClientClass server = app.getActiveServer();
-    private PeerClientClass client = app.getActiveClient();
+    private PeerClientClass server;
+    private PeerClientClass client;
+    private User sender;
+    private User receiver;
 
     public LoginPage(Main app, Main.LoginCallBack callBack) {
         this.app = app;
         this.dbManager = app.getDatabaseManager();
         this.loginCallBack = callBack;
+        this.server = app.getActiveServer();
+        this.client = app.getActiveClient();
         createScene();
     }
 
@@ -92,8 +96,10 @@ public class LoginPage {
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     }
+                    sender = new User(app, senderEmail, senderPassword);
+                    receiver = new User(app, email, password);
                     if (loginCallBack != null) {
-                        loginCallBack.LoginSuccess(new User(senderEmail, senderPassword), new User(email, password));
+                        loginCallBack.LoginSuccess(sender, receiver);
                     } else{
                         loginCallBack.LoginFailed();
                     } 
