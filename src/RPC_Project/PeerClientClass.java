@@ -115,5 +115,9 @@ public class PeerClientClass {
     public DataInputStream getDIS(){
         return dis;
     }
+
+    public DataOutputStream getDOS(){
+        return dos;
+    }
 }
 

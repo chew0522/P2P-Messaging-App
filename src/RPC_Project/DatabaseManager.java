@@ -1,5 +1,8 @@
 package RPC_Project;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,17 +51,34 @@ public class DatabaseManager {
     }
 
     // 1. Insert message
-    public boolean insertMessage(int senderId, int receiverId, String content, boolean isFile, String filePath) throws SQLException {
-        String sql = "INSERT INTO messages (sender_id, receiver_id, content, is_file, file_path) VALUES (?, ?, ?, ?, ?)";
+    public void insertTextMessage(int senderId, int receiverId, String message) throws SQLException {
+        String sql = "INSERT INTO messages (sender_id, receiver_id, is_text, content) VALUES (?, ?, 1, ?)";
+        
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, senderId);
             stmt.setInt(2, receiverId);
-            stmt.setString(3, content);
-            stmt.setString(4, isFile ? "Y" : "N");
-            stmt.setString(5, filePath);
-            return stmt.executeUpdate() > 0;
+            stmt.setString(3, message);
+            stmt.executeUpdate();
+            System.out.println("Text message inserted.");
         }
     }
+
+    public void insertFileMessage(int senderId, int receiverId, File file) throws SQLException, IOException {
+        String sql = "INSERT INTO messages (sender_id, receiver_id, is_text, file, file_name) VALUES (?, ?, 0, ?, ?)";
+
+        try (FileInputStream fis = new FileInputStream(file);
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, senderId);
+            stmt.setInt(2, receiverId);
+            stmt.setBinaryStream(3, fis, (int) file.length());
+            stmt.setString(4, file.getName());
+            stmt.executeUpdate();
+            System.out.println("File message inserted.");
+        }
+    }
+
+
 
     // 2. Delete message by ID (optional use case)
     public boolean deleteMessage(int messageId) throws SQLException {
@@ -113,7 +133,7 @@ public class DatabaseManager {
     }
 
     // 5. Login validation
-    public int getSenderID(String email, String password) throws SQLException {
+    public int getUserID(String email, String password) throws SQLException {
         String sql = "SELECT user_id FROM users WHERE email = ? AND password = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, email);
@@ -175,5 +195,9 @@ public class DatabaseManager {
             }
         }
         return false; // Should not be reached if query is successful
+    }
+
+    public Connection getConnection(){
+        return conn;
     }
 }

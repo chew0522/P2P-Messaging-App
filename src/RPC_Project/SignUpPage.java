@@ -104,7 +104,7 @@ public class SignUpPage {
                 } else {
                     errorLabel.setText("");
                     dbManager.registerUser(email, confirmPassword, username);
-                    app.showChatUI(username);
+                    app.showLoginPage();
                 }
             } catch (SQLException e1) {
                 e1.printStackTrace();

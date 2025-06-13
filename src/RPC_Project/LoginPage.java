@@ -1,5 +1,6 @@
 package RPC_Project;
 
+import java.io.IOException;
 import java.sql.SQLException;
 
 import javafx.geometry.Insets;
@@ -18,10 +19,14 @@ public class LoginPage {
     private Scene scene;
     private Main app;
     private DatabaseManager dbManager;
+    private Main.LoginCallBack loginCallBack;
+    private PeerClientClass server = app.getActiveServer();
+    private PeerClientClass client = app.getActiveClient();
 
-    public LoginPage(Main app) {
+    public LoginPage(Main app, Main.LoginCallBack callBack) {
         this.app = app;
         this.dbManager = app.getDatabaseManager();
+        this.loginCallBack = callBack;
         createScene();
     }
 
@@ -66,6 +71,8 @@ public class LoginPage {
         loginBtn.setOnAction(e -> {
             String email = usernameField.getText().trim();
             String password = passwordField.getText();
+            String senderEmail = "";
+            String senderPassword = "";
             try {
                 if (email.isEmpty()) {
                     errorLabel.setText("Username is empty.");
@@ -76,6 +83,21 @@ public class LoginPage {
                 } else {
                     errorLabel.setText("");
                     String username = dbManager.getUsername(email, password);
+                    try {
+                        client.getDOS().writeUTF(email);
+                        client.getDOS().writeUTF(password);
+                        senderEmail = server.getDIS().readUTF();
+                        senderPassword = server.getDIS().readUTF();
+                        
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                    if (loginCallBack != null) {
+                        loginCallBack.LoginSuccess(new User(senderEmail, senderPassword), new User(email, password));
+                    } else{
+                        loginCallBack.LoginFailed();
+                    } 
+
                     app.showChatUI(username);
                 }
             } catch (SQLException e1) {

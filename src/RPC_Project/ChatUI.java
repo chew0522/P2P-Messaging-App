@@ -1,15 +1,23 @@
 package RPC_Project;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -35,6 +43,7 @@ public class ChatUI {
     private Scene scene;
     private PeerClientClass server;
     private PeerClientClass client;
+    private DatabaseManager dbManager = app.getDatabaseManager();
     private Stage primaryStage;
     private Button attachButton;
     private VBox filePreviewBox;
@@ -42,13 +51,16 @@ public class ChatUI {
     private VBox messagesPane;
     private BorderPane root;
     private Popup filePreviewPopup;
-    private TextField captionField;
     private ScrollPane chatScrollPane;
+    private User sender;
+    private User receiver;
 
     public ChatUI(Main app){
         this.app = app;
         this.server = app.getActiveServer();
         this.client = app.getActiveClient();
+        this.sender = app.getSender();
+        this.receiver = app.getReceiver();
         createScene();
     }
 
@@ -87,6 +99,7 @@ public class ChatUI {
         root.setLeft(leftPane);
         root.setTop(topToolbar);
         setMessagePane();
+        loadChatHistory(dbManager.getConnection(), sender.getUserID(), receiver.getUserID());
         startReceiving("received_" + server.getFileName());
 
         scene = new Scene(root, 1000, 600);
@@ -143,8 +156,13 @@ public class ChatUI {
         Button sendButton = new Button("➡️");
         sendButton.setOnAction(e -> {
             String textMessage = messageInput.getText().trim();
-           
+            try {
+                dbManager.insertTextMessage(sender.getUserID(), receiver.getUserID(), textMessage);
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
             addMessage(textMessage);
+
             try {
                 client.sendText(textMessage);
             } catch (IOException e1) {
@@ -355,8 +373,13 @@ public class ChatUI {
 
         Button sendButton = new Button("➡️");
         sendButton.setOnAction(e -> {
-            String caption = captionField != null ? captionField.getText() : "";
-
+            try {
+                dbManager.insertFileMessage(sender.getUserID(), receiver.getUserID(), file);
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
             addFileBox(file);
             try {
                 client.sendFile(file.getAbsolutePath());
@@ -390,7 +413,7 @@ public class ChatUI {
 
 
         messageBox.setPadding(new Insets(10));
-        messageBox.setMaxWidth(400);
+        messageBox.setMaxWidth(600);
         messageBox.setStyle(
             "-fx-background-color: #DCF8C6;" + // Light green (like WhatsApp sender)
             "-fx-background-radius: 16 16 4 16;" + // top-left, top-right, bottom-right, bottom-left
@@ -422,7 +445,7 @@ public class ChatUI {
 
 
         messageBox.setPadding(new Insets(10));
-        messageBox.setMaxWidth(400);
+        messageBox.setMaxWidth(600);
         messageBox.setStyle(
             "-fx-background-color: #DCF8C6;" + // Light green (like WhatsApp sender)
             "-fx-background-radius: 16 16 4 16;" + // top-left, top-right, bottom-right, bottom-left
@@ -672,6 +695,67 @@ public class ChatUI {
         }).start();
     }
 
+    public void loadChatHistory(Connection conn, int userAId, int userBId) {
+        String sql = "SELECT * FROM messages " +
+                    "WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?) " +
+                    "ORDER BY timestamp ASC";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userAId);
+            stmt.setInt(2, userBId);
+            stmt.setInt(3, userBId);
+            stmt.setInt(4, userAId);
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                int senderId = rs.getInt("sender_id");
+                boolean isText = rs.getBoolean("is_text");
+
+                if (isText) {
+                    String content = rs.getString("content");
+                    if (senderId == userAId) {
+                        Platform.runLater(() -> addMessage(content));
+                    } else {
+                        Platform.runLater(() -> addReceivedMessage(content));
+                    }
+                } else {
+                    String fileName = rs.getString("file_name");
+                    InputStream fileStream = rs.getBinaryStream("file");
+                    File tempFile = File.createTempFile("chatfile_", "_" + fileName);
+                    tempFile.deleteOnExit(); // Optional: auto-delete on exit
+
+                    try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+                        byte[] buffer = new byte[4096];
+                        int bytesRead;
+                        while ((bytesRead = fileStream.read(buffer)) != -1) {
+                            fos.write(buffer, 0, bytesRead);
+                        }
+                    }
+
+                    if (senderId == userAId) {
+                        File finalFile = tempFile;
+                        Platform.runLater(() -> addFileBox(finalFile));
+                    } else {
+                        File finalFile = tempFile;
+                        Platform.runLater(() -> addReceivedFileBox(finalFile));
+                    }
+                }
+            }
+
+        } catch (SQLException | IOException e) {
+            e.printStackTrace();
+            Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, "Error", "Failed to load chat history", e.getMessage()));
+        }
+    }
+
+    private void showAlert(AlertType type, String title, String header, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
 
 
     public Scene getScene(){

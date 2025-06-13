@@ -17,6 +17,8 @@ public class Main extends Application {
     private String password = "223763";
     private PeerClientClass activeChatClient;
     private PeerClientClass activeChatServer;
+    private User activeSender;
+    private User activeReceiver;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -51,6 +53,12 @@ public class Main extends Application {
         void onConnectionSuccess(PeerClientClass server, PeerClientClass client);
         void onConnectionFailed();
     }
+
+    public interface LoginCallBack{
+        void LoginSuccess(User sender, User receiver);
+        void LoginFailed();
+
+    }
     
     public void showIPAddressInput() {
         IPAddressInput ipInputUI = new IPAddressInput(this, new ConnectionCallback() {
@@ -60,7 +68,7 @@ public class Main extends Application {
                 activeChatServer = server;
                 activeChatClient = client; // Store the client in Main
                 System.out.println("Callback: Connection successful! Navigating to Login Page.");
-                showChatUI(""); // <--- NEW: Call method to show Chat UI
+                showLoginPage(); // <--- NEW: Call method to show Chat UI
             }
 
             @Override
@@ -74,7 +82,18 @@ public class Main extends Application {
     }
 
     public void showLoginPage() {
-        LoginPage loginPage = new LoginPage(this);
+        LoginPage loginPage = new LoginPage(this, new LoginCallBack() {
+            @Override
+            public void LoginSuccess(User sender, User receiver){
+                activeSender = sender;
+                activeReceiver = receiver;
+            }
+
+            @Override
+            public void LoginFailed(){
+                System.out.println("Callback: Login Failed");
+            }
+        });
         primaryStage.setScene(loginPage.getScene());
         primaryStage.setTitle("Login");
     }
@@ -109,6 +128,14 @@ public class Main extends Application {
 
     public PeerClientClass getActiveClient(){
         return activeChatClient;
+    }
+
+    public User getSender(){
+        return activeSender;
+    }
+
+    public User getReceiver(){
+        return activeReceiver;
     }
 
 

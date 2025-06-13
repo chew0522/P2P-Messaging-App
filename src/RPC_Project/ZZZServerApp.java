@@ -3,7 +3,7 @@ package RPC_Project;
 import java.io.*;
 import java.net.*;
 
-public class ServerApp {
+public class ZZZServerApp {
     public static final int port = 5000;
 
     public static void main(String[] args) {
