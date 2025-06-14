@@ -10,6 +10,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -158,7 +163,7 @@ public class ChatUI {
             } catch (SQLException e1) {
                 e1.printStackTrace();
             }
-            addMessage(textMessage);
+            addMessage(textMessage, new Timestamp(System.currentTimeMillis()));
 
             try {
                 client.sendText(textMessage);
@@ -388,7 +393,7 @@ public class ChatUI {
         sendButton.setFitWidth(40);
         sendButton.setFitHeight(40);
         sendButton.setOnMouseClicked(e -> {
-            addFileBox(file);
+            addFileBox(file, new Timestamp(System.currentTimeMillis()));
             try {
                 client.sendFile(file.getAbsolutePath());
             } catch (IOException e1) {
@@ -429,71 +434,92 @@ public class ChatUI {
         );
     }
 
-    private void addMessage(String text) {
-        
+    private void addMessage(String text, Timestamp timestamp) {
         VBox messageBox = new VBox(5);
-        Text messageText = new Text(text);
-        messageText.setWrappingWidth(300);
-        messageBox.getChildren().add(messageText);
-
-
         messageBox.setPadding(new Insets(10));
         messageBox.setMaxWidth(600);
         messageBox.setStyle(
             "-fx-background-color: #DCF8C6;" + // Light green (like WhatsApp sender)
-            "-fx-background-radius: 16 16 4 16;" + // top-left, top-right, bottom-right, bottom-left
+            "-fx-background-radius: 16 16 4 16;" +
             "-fx-border-radius: 16 16 4 16;" +
-            "-fx-border-color: #A5D6A7;" + // Optional border
+            "-fx-border-color: #A5D6A7;" +
             "-fx-border-width: 1;"
         );
 
-        HBox wrapper = new HBox(messageBox);
-        wrapper.setAlignment(Pos.CENTER_RIGHT); // Push to right side
-        wrapper.setPadding(new Insets(5, 10, 5, 10)); // Add spacing
-
-        messagesPane.getChildren().add(wrapper);
-
-        // Scroll to bottom after layout update
-        messagesPane.layout();
-        Platform.runLater(() -> {
-            messagesPane.layout(); // Ensure layout is refreshed
-            Platform.runLater(() -> chatScrollPane.setVvalue(1.0)); // Scroll after layout
-        });
-    }
-
-    private void addReceivedMessage(String text) {
-        
-        VBox messageBox = new VBox(5);
+        // Message content
         Text messageText = new Text(text);
         messageText.setWrappingWidth(300);
         messageBox.getChildren().add(messageText);
 
+        // Timestamp
+        String timeString = timestamp.toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        Label timeLabel = new Label(timeString);
+        timeLabel.setStyle("-fx-text-fill: gray; -fx-font-size: 10;");
+        HBox timeWrapper = new HBox(timeLabel);
+        timeWrapper.setAlignment(Pos.BOTTOM_RIGHT);
 
+
+        messageBox.getChildren().add(timeWrapper);
+
+        // Align the whole message to the right
+        HBox wrapper = new HBox(messageBox);
+        wrapper.setAlignment(Pos.CENTER_RIGHT);
+        wrapper.setPadding(new Insets(5, 10, 5, 10));
+
+        messagesPane.getChildren().add(wrapper);
+
+        // Scroll to bottom after layout update
+        Platform.runLater(() -> {
+            messagesPane.layout();
+            chatScrollPane.setVvalue(1.0);
+        });
+    }
+
+
+    private void addReceivedMessage(String text, Timestamp timestamp) {
+        VBox messageBox = new VBox(5);
+        
+        // Message content
+        Text messageText = new Text(text);
+        messageText.setWrappingWidth(300);
+        
+        // Timestamp
+        String timeString = timestamp.toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        Label timeLabel = new Label(timeString);
+        timeLabel.setStyle("-fx-text-fill: gray; -fx-font-size: 10;");
+
+        HBox timeWrapper = new HBox(timeLabel);
+        timeWrapper.setAlignment(Pos.BOTTOM_RIGHT);
+
+        // Add both text and timestamp to the message box
+        messageBox.getChildren().addAll(messageText, timeWrapper);
         messageBox.setPadding(new Insets(10));
         messageBox.setMaxWidth(600);
         messageBox.setStyle(
-            "-fx-background-color: #ced2d5;" + // Light green (like WhatsApp sender)
-            "-fx-background-radius: 16 16 16 4;" + // top-left, top-right, bottom-right, bottom-left
+            "-fx-background-color: #ced2d5;" +  // Light gray (like WhatsApp receiver)
+            "-fx-background-radius: 16 16 16 4;" +
             "-fx-border-radius: 16 16 16 4;" +
             "-fx-border-width: 1;"
         );
 
+        // Align message to the left
         HBox wrapper = new HBox(messageBox);
-        wrapper.setAlignment(Pos.CENTER_LEFT); // Push to right side
-        wrapper.setPadding(new Insets(5, 10, 5, 10)); // Add spacing
+        wrapper.setAlignment(Pos.CENTER_LEFT);
+        wrapper.setPadding(new Insets(5, 10, 5, 10));
 
         messagesPane.getChildren().add(wrapper);
 
         // Scroll to bottom after layout update
         messagesPane.layout();
         Platform.runLater(() -> {
-            messagesPane.layout(); // Ensure layout is refreshed
-            Platform.runLater(() -> chatScrollPane.setVvalue(1.0)); // Scroll after layout
+            messagesPane.layout();
+            Platform.runLater(() -> chatScrollPane.setVvalue(1.0));
         });
     }
 
 
-    private void addFileBox(File file) {
+
+    private void addFileBox(File file, Timestamp timestamp) {
         String fileName = file.getName();
         long fileSizeBytes = file.length();
         String fileSize = humanReadableByteCountSI(fileSizeBytes);
@@ -573,8 +599,14 @@ public class ChatUI {
         fileBP.setRight(buttonWrapper);
         fileBP.setPadding(new Insets(5));
 
+        String timeString = timestamp.toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        Label timeLabel = new Label(timeString);
+        timeLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: #dddddd;");
+        HBox timestampWrapper = new HBox(timeLabel);
+        timestampWrapper.setAlignment(Pos.BOTTOM_RIGHT);
+
         // Styling the file message box
-        VBox fileBox = new VBox(fileBP);
+        VBox fileBox = new VBox(fileBP, timestampWrapper);
         fileBox.setSpacing(5);
         fileBox.setPadding(new Insets(10));
         fileBox.setMaxWidth(400);
@@ -598,7 +630,7 @@ public class ChatUI {
     }
 
 
-    private void addReceivedFileBox(File file) {
+    private void addReceivedFileBox(File file, Timestamp timestamp) {
         String fileName = file.getName();
         long fileSizeBytes = file.length();
         String fileSize = humanReadableByteCountSI(fileSizeBytes);
@@ -678,8 +710,14 @@ public class ChatUI {
         fileBP.setRight(buttonWrapper);
         fileBP.setPadding(new Insets(5));
 
+        String timeString = timestamp.toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        Label timeLabel = new Label(timeString);
+        timeLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: #dddddd;");
+        HBox timestampWrapper = new HBox(timeLabel);
+        timestampWrapper.setAlignment(Pos.BOTTOM_RIGHT);
+
         // Styling the file message box
-        VBox fileBox = new VBox(fileBP);
+        VBox fileBox = new VBox(fileBP, timestampWrapper);
         fileBox.setSpacing(5);
         fileBox.setPadding(new Insets(10));
         fileBox.setMaxWidth(400);
@@ -713,7 +751,7 @@ public class ChatUI {
                         case "TEXT" -> {
                             String message = server.receiveText();
                             Platform.runLater(() -> {
-                                addReceivedMessage(message);
+                                addReceivedMessage(message, new Timestamp(System.currentTimeMillis()));
                                 try {
                                     dbManager.insertTextMessage(sender.getUserID(), receiver.getUserID(), message);
                                 } catch (SQLException e) {
@@ -724,7 +762,7 @@ public class ChatUI {
                         case "FILE" -> {
                             File receivedFile = server.receiveFile(saveDirectory);
                             Platform.runLater(() -> {
-                                addReceivedFileBox(receivedFile);
+                                addReceivedFileBox(receivedFile, new Timestamp(System.currentTimeMillis()));
                                 try {
                                     dbManager.insertFileMessage(sender.getUserID(), receiver.getUserID(), receivedFile);
                                 } catch (SQLException e) {
@@ -768,10 +806,11 @@ public class ChatUI {
 
                 if (isText) {
                     String content = rs.getString("content");
+                    Timestamp timestamp = rs.getTimestamp("timestamp");
                     if (senderId == userAId) {
-                        Platform.runLater(() -> addMessage(content));
+                        Platform.runLater(() -> addMessage(content, timestamp));
                     } else {
-                        Platform.runLater(() -> addReceivedMessage(content));
+                        Platform.runLater(() -> addReceivedMessage(content, timestamp));
                     }
                 } else {
                     String fileName = rs.getString("file_name");
@@ -788,14 +827,15 @@ public class ChatUI {
                     }
                     File finalFile = new File("newNamedFile.ext"); // replace with your desired name and extension
                     boolean success = tempFile.renameTo(finalFile);
+                    Timestamp timestamp = rs.getTimestamp("timestamp");
                     if (!success) {
                         System.err.println("Failed to rename file.");
                     }
 
                     if (senderId == userAId) {
-                        Platform.runLater(() -> addFileBox(finalFile));
+                        Platform.runLater(() -> addFileBox(finalFile, timestamp));
                     } else {
-                        Platform.runLater(() -> addReceivedFileBox(finalFile));
+                        Platform.runLater(() -> addReceivedFileBox(finalFile, timestamp));
                     }
                 }
             }
