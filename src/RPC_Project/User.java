@@ -43,4 +43,8 @@ public class User{
             e.printStackTrace();
         }
     }
+
+    public String getEmail(){
+        return this.email;
+    }
 }

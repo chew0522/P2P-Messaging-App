@@ -96,8 +96,8 @@ public class LoginPage {
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     }
-                    sender = new User(app, senderEmail, senderPassword);
-                    receiver = new User(app, email, password);
+                    receiver = new User(app, senderEmail, senderPassword);
+                    sender = new User(app, email, password);
                     if (loginCallBack != null) {
                         loginCallBack.LoginSuccess(sender, receiver);
                     } else{

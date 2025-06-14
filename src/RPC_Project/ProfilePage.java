@@ -4,9 +4,8 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
@@ -24,26 +23,31 @@ public class ProfilePage {
         VBox root = new VBox(20);
         root.setPadding(new Insets(20));
         root.setAlignment(Pos.TOP_CENTER);
+        root.setStyle("-fx-background-color: #2b3947;");
 
-        ImageView userPhoto = new ImageView(new Image("file:///C:/Users/raymo/eclipse-workspace/CNS4400/resources/user_photo.jpg"));
-        userPhoto.setFitWidth(120);
-        userPhoto.setFitHeight(120);
-        userPhoto.setPreserveRatio(true);
-        userPhoto.setStyle("-fx-effect: dropshadow(gaussian, black, 10, 0.5, 0, 0); -fx-background-radius: 60;");
-
-        Text usernameText = new Text("Raymond Ng");
+        Text usernameText = new Text(app.getSender().getUsername());
         usernameText.setFont(Font.font(24));
-        Text phoneText = new Text("01128084108");
-        phoneText.setFont(Font.font(16));
-        phoneText.setStyle("-fx-text-fill: gray;");
+        usernameText.setFill(Color.WHITE);
+
+        Text emailText = new Text(app.getSender().getEmail());
+        usernameText.setFont(Font.font(24));
+        usernameText.setFill(Color.WHITE);
+
+        Button backBtn = new Button("Back");
+        backBtn.setOnAction(e -> {
+            app.showChatUI(app.getSender().getUsername());
+        });
+        backBtn.setPrefWidth(150);
 
         Button logoutBtn = new Button("Logout");
-        logoutBtn.setOnAction(e -> app.showLoginPage());
+        logoutBtn.setOnAction(e -> {
+            app.showLoginPage();
+        });
         logoutBtn.setPrefWidth(150);
 
-        root.getChildren().addAll(userPhoto, usernameText, phoneText, logoutBtn);
+        root.getChildren().addAll(usernameText, emailText, backBtn, logoutBtn);
 
-        scene = new Scene(root, 400, 400);
+        scene = new Scene(root, 1000, 600);
     }
 
     public Scene getScene() {

@@ -45,7 +45,7 @@ public class ChatUI {
     private PeerClientClass client;
     private DatabaseManager dbManager;
     private Stage primaryStage;
-    private Button attachButton;
+    private ImageView attachFileIcon;
     private VBox filePreviewBox;
     private File selectedFile = null;
     private VBox messagesPane;
@@ -79,13 +79,13 @@ public class ChatUI {
         leftPane.setPadding(new Insets(10));
         leftPane.setAlignment(Pos.TOP_CENTER);
 
-        ImageView profileIcon = new ImageView(new Image(getClass().getResource("/images/ProfileIcon.jpg").toExternalForm()));
+        ImageView profileIcon = new ImageView(new Image(getClass().getResource("/images/ProfileIcon.png").toExternalForm()));
         profileIcon.setFitWidth(50);
         profileIcon.setFitHeight(50);
         profileIcon.setOnMouseClicked(e -> app.showProfilePage());
         leftPane.getChildren().add(profileIcon);
 
-        Label chatLabel = new Label("Chat");
+        Label chatLabel = new Label(receiver.getUsername());
         chatLabel.setStyle(
             "-fx-text-fill: #ffffff;" +
             "-fx-font-weight: bold;"  + 
@@ -127,10 +127,10 @@ public class ChatUI {
         bottomBar.setStyle("-fx-background-color: #1e2d3b;");
         bottomBar.setAlignment(Pos.CENTER_LEFT);
 
-        // Icons
-        ImageView emojiIcon = new ImageView(new Image(getClass().getResource("/images/EmojiIcon.jpg").toExternalForm()));
-        emojiIcon.setFitWidth(25);
-        emojiIcon.setFitHeight(25);
+        // EmojiIcon
+        ImageView emojiIcon = new ImageView(new Image(getClass().getResource("/images/EmojiIcon.png").toExternalForm()));
+        emojiIcon.setFitWidth(40);
+        emojiIcon.setFitHeight(40);
 
         // Message input
         TextField messageInput = new TextField();
@@ -138,24 +138,20 @@ public class ChatUI {
         HBox.setHgrow(messageInput, Priority.ALWAYS);
 
         // Emoji picker button (using your emoji icon)
-        Button emojiButton = new Button();
-        emojiButton.setGraphic(emojiIcon);
-        emojiButton.setOnAction(e -> 
-        	showEmojiPopup(messageInput, emojiButton));
+        emojiIcon.setOnMouseClicked(e -> showEmojiPopup(messageInput, emojiIcon));
 
-        // Attach button (optional: add action to attach files)
-        attachButton = new Button("📎");
-        attachButton.setFont(Font.font(18));
-        attachButton.setFocusTraversable(false);
-       
-        // Show popup when button clicked
-        attachButton.setOnAction(e -> {
-            openFileExplorer();
-        });
+
+        // EmojiIcon
+        attachFileIcon = new ImageView(new Image(getClass().getResource("/images/FileUploadIcon.png").toExternalForm()));
+        attachFileIcon.setFitWidth(40);
+        attachFileIcon.setFitHeight(40);
+        attachFileIcon.setOnMouseClicked(e -> openFileExplorer());
 
         // Send button
-        Button sendButton = new Button("➡️");
-        sendButton.setOnAction(e -> {
+        ImageView sendButton = new ImageView(new Image(getClass().getResource("/images/SendButton.png").toExternalForm()));
+        sendButton.setFitWidth(40);
+        sendButton.setFitHeight(40);
+        sendButton.setOnMouseClicked(e -> {
             String textMessage = messageInput.getText().trim();
             try {
                 dbManager.insertTextMessage(sender.getUserID(), receiver.getUserID(), textMessage);
@@ -178,7 +174,7 @@ public class ChatUI {
         });
 
         // Add all to bottom bar
-        bottomBar.getChildren().addAll(emojiButton, attachButton, messageInput, sendButton);       
+        bottomBar.getChildren().addAll(emojiIcon, attachFileIcon, messageInput, sendButton);       
         filePreviewBox = new VBox();
         filePreviewBox.setVisible(false);
         filePreviewBox.setPadding(new Insets(10));
@@ -210,31 +206,52 @@ public class ChatUI {
         root.setPadding(new Insets(10));
         root.setStyle("-fx-background-color: white; -fx-border-color: gray; -fx-border-width: 1;");
 
-        TextField searchField = new TextField();
-        searchField.setPromptText("Search emoji...");
-
         TabPane tabPane = new TabPane();
 
-        // Example categories
-        String[] smileys = {"😀", "😂", "😍", "😎", "😢", "😡"};
-        String[] animals = {"🐶", "🐱", "🦁", "🐼", "🐸"};
-        // ... add more categories
+        String[] smileys = {
+            "😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "😊", "😇",
+            "🙂", "🙃", "😉", "😌", "😍", "😘", "😗", "😙", "😚", "😋",
+            "😜", "😝", "😛", "🤑", "🤗", "🤔", "😐", "😑", "😶",
+            "🙄", "😏", "😣", "😥", "😮", "🤐", "😯", "😪", "😫",
+            "😴", "😌", "😓", "😔", "😕", "🙁", "😢", "😭", "😤",
+            "😠", "😡", "😳", "😱", "😨", "😰", "😥"
+        };
+
+        String[] animals = {
+            "🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐨", "🐯",
+            "🦁", "🐮", "🐷", "🐸", "🐵", "🦍", "🐔", "🐧", "🐦", "🐤",
+            "🦆", "🦅", "🦉", "🦇", "🐺", "🦄", "🐝", "🦂"
+        };
+
+        String[] food = {
+            "🍎", "🍌", "🍇", "🍓", "🍒", "🍍", "🍉", "🥝", "🍑",
+            "🍅", "🥑", "🍆", "🥕", "🌽", "🥔", "🍠", "🍞", "🥐",
+            "🥖", "🧀", "🍗", "🍖", "🍔", "🍟", "🍕", "🌭",
+            "🍿", "🍩", "🍪", "🎂", "🍰", "🍫", "🍬", "🍭"
+        };
+
+        String[] nature = {
+            "🌸", "🌼", "🌻", "🌺", "🌷", "🌹", "🥀", "🌳", "🌴", "🌵",
+            "🍀", "🌾", "🌿", "🍁", "🍂", "🍃", "🌍", "🌎", "🌏", "🌕",
+            "🌑", "🌙", "⭐", "✨", "⚡", "⛅", "🌈"
+        };
+
+        String[] symbols = {
+            "💛", "💚", "💙", "💜", "🖤", "💔",
+            "💕", "💞", "💓", "💗", "💖", "💘", "💝", "💟", "✅", "❌",
+            "❗", "❓", "🔒", "🔓", "🔑", "🔔", "🔕", "💡"
+        };
 
         tabPane.getTabs().addAll(
             createEmojiTab("Smileys", smileys, messageInput),
-            createEmojiTab("Animals", animals, messageInput)
-            // Add more tabs if needed
+            createEmojiTab("Animals", animals, messageInput), 
+            createEmojiTab("Foods", food, messageInput), 
+            createEmojiTab("Nature", nature, messageInput), 
+            createEmojiTab("Symbols", symbols, messageInput)
         );
 
-        searchField.textProperty().addListener((obs, oldText, newText) -> {
-            for (Tab tab : tabPane.getTabs()) {
-                VBox content = (VBox) tab.getContent();
-                GridPane grid = (GridPane) content.getChildren().get(1);
-                filterEmojiGrid(grid, newText);
-            }
-        });
 
-        root.getChildren().addAll(searchField, tabPane);
+        root.getChildren().addAll(tabPane);
 
         emojiPopup.getContent().add(root);
 
@@ -242,11 +259,10 @@ public class ChatUI {
         emojiPopup.show(
             primaryStage, // Owner window (needed for correct stacking and behavior)
             anchorNode.localToScreen(0, 0).getX(), // X coordinate
-            anchorNode.localToScreen(0, 0).getY() - 220 // Y coordinate (above the button, with padding)
+            anchorNode.localToScreen(0, 0).getY() - 325 // Y coordinate (above the button, with padding)
         );
 
     }
-
 
     private Tab createEmojiTab(String categoryName, String[] emojis, TextField messageInput) {
         Tab tab = new Tab(categoryName);
@@ -255,7 +271,7 @@ public class ChatUI {
         VBox vbox = new VBox(5);
         vbox.setPadding(new Insets(10));
 
-        // Label or title for emoji category (optional)
+        // Label or title for emoji category
         Label categoryLabel = new Label(categoryName);
         categoryLabel.setFont(Font.font(16));
 
@@ -268,10 +284,9 @@ public class ChatUI {
         for (int i = 0; i < emojis.length; i++) {
             String emoji = emojis[i];
             Button emojiBtn = new Button(emoji);
-            emojiBtn.setFont(Font.font(24));
+            emojiBtn.setFont(Font.font(18));
             emojiBtn.setStyle("-fx-background-color: transparent;");
             emojiBtn.setOnAction(e -> {
-                // Insert selected emoji at the current cursor position in message input
                 int pos = messageInput.getCaretPosition();
                 String oldText = messageInput.getText();
                 String newText = oldText.substring(0, pos) + emoji + oldText.substring(pos);
@@ -282,28 +297,19 @@ public class ChatUI {
             grid.add(emojiBtn, i % cols, i / cols);
         }
 
-        vbox.getChildren().addAll(categoryLabel, grid);
+        // Make the grid scrollable without resizing the tab
+        ScrollPane scrollPane = new ScrollPane(grid);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setPrefViewportHeight(200);  // Adjust height as needed
+        scrollPane.setPrefViewportWidth(350);   // Adjust width as needed
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scrollPane.setStyle("-fx-background-color:transparent;");
+
+        vbox.getChildren().addAll(categoryLabel, scrollPane);
         tab.setContent(vbox);
 
         return tab;
-    }
-
-    private void filterEmojiGrid(GridPane grid, String filter) {
-        // Simple filter: hide emoji buttons if their text does not contain the filter
-        filter = filter.toLowerCase();
-        for (javafx.scene.Node node : grid.getChildren()) {
-            if (node instanceof Button) {
-                Button btn = (Button) node;
-                String emojiText = btn.getText();
-                if (emojiText.toLowerCase().contains(filter) || filter.isEmpty()) {
-                    btn.setVisible(true);
-                    btn.setManaged(true);
-                } else {
-                    btn.setVisible(false);
-                    btn.setManaged(false);
-                }
-            }
-        }
     }
 
     private void openFileExplorer() {
@@ -331,6 +337,7 @@ public class ChatUI {
     private void showFilePreview(File file) {
         // Clear previous preview
         filePreviewBox.getChildren().clear();
+        filePreviewBox.setStyle("-fx-background-color: #1e2d3b;");
 
         // File details
         String fileName = file.getName();
@@ -349,59 +356,76 @@ public class ChatUI {
         if (lastDotIndex > 0 && lastDotIndex < fileName.length() - 1) {
             extension = fileName.substring(lastDotIndex + 1).toLowerCase();
         }
-        String icon = switch (extension) {
-            case "pdf" -> "📄";
-            case "doc", "docx" -> "📝";
-            case "xls", "xlsx" -> "📊";
-            case "png", "jpg", "jpeg", "gif" -> "🖼️";
-            case "mp4", "avi", "mov", "mkv" -> "🎬";
-            default -> "📁";
+        String imagePath = switch (extension.toLowerCase()) {
+            case "pdf" -> "/images/PDF.png";
+            case "doc", "docx" -> "/images/DOCX.png";
+            case "xls", "xlsx" -> "/images/XLSX.png";
+            case "png", "jpg", "jpeg", "gif" -> "/images/IMAGE.png";
+            case "mp4", "avi", "mov", "mkv" -> "/images/VIDEO.png";
+            default -> "/images/FOLDER.png";
         };
 
-        Label iconLabel = new Label(icon);
-        iconLabel.setStyle("-fx-font-size: 40px;");
+        ImageView iconLabel = new ImageView(new Image(getClass().getResource(imagePath).toExternalForm()));
+        iconLabel.setFitWidth(40);
+        iconLabel.setFitHeight(40);
 
-        VBox fileInfo = new VBox(
-            new Label(fileName),
-            new Label(fileSize),
-            new Label(fileType != null ? fileType : "Unknown")
-        );
+        // File info
+        Label nameLabel = new Label(fileName);
+        Label sizeLabel = new Label(fileSize);
+        Label typeLabel = new Label(fileType != null ? fileType : "Unknown");
+
+        // Set text color to white
+        nameLabel.setStyle("-fx-text-fill: white;");
+        sizeLabel.setStyle("-fx-text-fill: white;");
+        typeLabel.setStyle("-fx-text-fill: white;");
+
+        VBox fileInfo = new VBox(nameLabel, sizeLabel, typeLabel);
+
         fileInfo.setSpacing(5);
 
-        HBox preview = new HBox(iconLabel, fileInfo);
-        preview.setSpacing(15);
-        preview.setAlignment(Pos.CENTER_LEFT);
-
-        Button sendButton = new Button("➡️");
-        sendButton.setOnAction(e -> {
-            try {
-                dbManager.insertFileMessage(sender.getUserID(), receiver.getUserID(), file);
-            } catch (SQLException e1) {
-                e1.printStackTrace();
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
+        // Send button
+        ImageView sendButton = new ImageView(new Image(getClass().getResource("/images/SendButton.png").toExternalForm()));
+        sendButton.setFitWidth(40);
+        sendButton.setFitHeight(40);
+        sendButton.setOnMouseClicked(e -> {
             addFileBox(file);
             try {
                 client.sendFile(file.getAbsolutePath());
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
-            
-            // Clear input and preview
+
             filePreviewBox.getChildren().clear();
             filePreviewBox.setVisible(false);
             selectedFile = null;
-            
         });
 
-        filePreviewBox.getChildren().addAll(preview, sendButton);
+        // BorderPane layout
+        BorderPane preview = new BorderPane();
+        // Wrap iconLabel in a VBox with top padding
+        VBox iconWrapper = new VBox(iconLabel);
+        iconWrapper.setPadding(new Insets(8, 5, 0, 0)); // top, right, bottom, left
+
+        // Wrap sendButton in a VBox with top padding
+        VBox buttonWrapper = new VBox(sendButton);
+        buttonWrapper.setPadding(new Insets(8, 0, 0, 5));
+
+        // Apply to BorderPane
+        preview.setLeft(iconWrapper);
+        preview.setCenter(fileInfo);
+        preview.setRight(buttonWrapper);
+        BorderPane.setMargin(iconLabel, new Insets(0, 10, 0, 0));
+        BorderPane.setMargin(fileInfo, new Insets(0, 10, 0, 0));
+        preview.setPadding(new Insets(5));
+
+        // Finalize
+        filePreviewBox.getChildren().add(preview);
         filePreviewBox.setSpacing(10);
         filePreviewBox.setVisible(true);
         filePreviewPopup.show(
             primaryStage, // Owner window (needed for correct stacking and behavior)
-            attachButton.localToScreen(0, 0).getX(), // X coordinate
-            attachButton.localToScreen(0, 0).getY() - filePreviewBox.prefHeight(-1) - 120 // Y coordinate (above the button, with padding)
+            attachFileIcon.localToScreen(0, 0).getX(), // X coordinate
+            attachFileIcon.localToScreen(0, 0).getY() - filePreviewBox.prefHeight(-1) - 50 // Y coordinate (above the button, with padding)
         );
     }
 
@@ -448,10 +472,9 @@ public class ChatUI {
         messageBox.setPadding(new Insets(10));
         messageBox.setMaxWidth(600);
         messageBox.setStyle(
-            "-fx-background-color: #DCF8C6;" + // Light green (like WhatsApp sender)
-            "-fx-background-radius: 16 16 4 16;" + // top-left, top-right, bottom-right, bottom-left
-            "-fx-border-radius: 16 16 4 16;" +
-            "-fx-border-color: #A5D6A7;" + // Optional border
+            "-fx-background-color: #ced2d5;" + // Light green (like WhatsApp sender)
+            "-fx-background-radius: 16 16 16 4;" + // top-left, top-right, bottom-right, bottom-left
+            "-fx-border-radius: 16 16 16 4;" +
             "-fx-border-width: 1;"
         );
 
@@ -470,7 +493,7 @@ public class ChatUI {
     }
 
 
-    private void addFileBox(File file){
+    private void addFileBox(File file) {
         String fileName = file.getName();
         long fileSizeBytes = file.length();
         String fileSize = humanReadableByteCountSI(fileSizeBytes);
@@ -479,94 +502,103 @@ public class ChatUI {
             fileType = Files.probeContentType(file.toPath());
         } catch (IOException e) {
             System.err.println("Error probing file type for " + fileName + ": " + e.getMessage());
-            fileType = "Unknown (Error)"; // Assign a default in case of error
+            fileType = "Unknown";
         }
 
-        // Icon (based on extension)
         String extension = "";
         int lastDotIndex = fileName.lastIndexOf(".");
         if (lastDotIndex > 0 && lastDotIndex < fileName.length() - 1) {
             extension = fileName.substring(lastDotIndex + 1).toLowerCase();
         }
-        String icon = switch (extension) {
-            case "pdf" -> "📄";
-            case "doc", "docx" -> "📝";
-            case "xls", "xlsx" -> "📊";
-            case "png", "jpg", "jpeg", "gif" -> "🖼️";
-            case "mp4", "avi", "mov", "mkv" -> "🎬";
-            default -> "📁";
+        String imagePath = switch (extension) {
+            case "pdf" -> "/images/PDF.png";
+            case "doc", "docx" -> "/images/DOCX.png";
+            case "xls", "xlsx" -> "/images/XLSX.png";
+            case "png", "jpg", "jpeg", "gif" -> "/images/IMAGE.png";
+            case "mp4", "avi", "mov", "mkv" -> "/images/VIDEO.png";
+            default -> "/images/FOLDER.png";
         };
 
-        Label iconLabel = new Label(icon);
-        iconLabel.setStyle("-fx-font-size: 40px;");
+        ImageView iconLabel = new ImageView(new Image(getClass().getResource(imagePath).toExternalForm()));
+        iconLabel.setFitWidth(40);
+        iconLabel.setFitHeight(40);
 
-        VBox fileBox = new VBox(5);
-        fileBox.setPadding(new Insets(10));
-        fileBox.setMaxWidth(400);
-        fileBox.setStyle(
-            "-fx-background-color: #DCF8C6;" + // light green (WhatsApp-like)
-            "-fx-background-radius: 16 16 4 16;" + // top-left, top-right, bottom-right, bottom-left
-            "-fx-border-radius: 16 16 4 16;" +
-            "-fx-border-color: #A5D6A7;" + // optional border
-            "-fx-border-width: 1;"
-        );
-        HBox wrapper = new HBox(fileBox);
-        wrapper.setAlignment(Pos.CENTER_RIGHT); // Push to right side
-        wrapper.setPadding(new Insets(5, 10, 5, 10)); // Add spacing
-        HBox fileInfoWithIcon = new HBox(5);
         Label nameLabel = new Label(fileName);
-        nameLabel.setStyle("-fx-text-fill: black;");
+        nameLabel.setStyle("-fx-text-fill: white;");
 
         Label sizeLabel = new Label(fileSize);
-        sizeLabel.setStyle("-fx-text-fill: black;");
+        sizeLabel.setStyle("-fx-text-fill: white;");
 
-        Label typeLabel = new Label(fileType != null ? fileType : "Unknown");
-        typeLabel.setStyle("-fx-text-fill: black;");
+        Label typeLabel = new Label(fileType);
+        typeLabel.setStyle("-fx-text-fill: white;");
 
         VBox fileInfo = new VBox(nameLabel, sizeLabel, typeLabel);
+        fileInfo.setSpacing(5);
 
-        Button downloadButton = new Button("⬇");
-        downloadButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;");
-
-        // Set the action for the download button
-        downloadButton.setOnAction(e -> {
+        // Send button (download)
+        ImageView downloadButton = new ImageView(new Image(getClass().getResource("/images/DownloadButton.png").toExternalForm()));
+        downloadButton.setFitWidth(40);
+        downloadButton.setFitHeight(40);
+        downloadButton.setOnMouseClicked(e -> {
             Stage ownerStage = (Stage) downloadButton.getScene().getWindow();
-            if (ownerStage == null) {
-                ownerStage = new Stage();
-            }
+            if (ownerStage == null) ownerStage = new Stage();
 
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Save File");
-            fileChooser.setInitialFileName(file.getName()); // Suggest original file name
+            fileChooser.setInitialFileName(file.getName());
 
-            // Show save dialog and get the selected destination file
             File destinationFile = fileChooser.showSaveDialog(ownerStage);
-
             if (destinationFile != null) {
                 try {
-                    // Copy the attachment file to the chosen destination
                     Files.copy(file.toPath(), destinationFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                    System.out.println("File downloaded successfully to: " + destinationFile.getAbsolutePath());
+                    System.out.println("File downloaded to: " + destinationFile.getAbsolutePath());
                 } catch (IOException ex) {
-                    System.err.println("Error downloading file: " + ex.getMessage());
+                    System.err.println("Download failed: " + ex.getMessage());
                 }
             } else {
-                System.out.println("File download cancelled by user.");
+                System.out.println("Download cancelled.");
             }
         });
 
+        // Layout setup using BorderPane
+        VBox iconWrapper = new VBox(iconLabel);
+        iconWrapper.setPadding(new Insets(8, 5, 0, 0));
 
-        fileInfoWithIcon.getChildren().addAll(iconLabel, fileInfo, downloadButton);
-        fileBox.getChildren().addAll(fileInfoWithIcon);
+        VBox buttonWrapper = new VBox(downloadButton);
+        buttonWrapper.setPadding(new Insets(8, 0, 0, 5));
+
+        BorderPane fileBP = new BorderPane();
+        fileBP.setLeft(iconWrapper);
+        fileBP.setCenter(fileInfo);
+        fileBP.setRight(buttonWrapper);
+        fileBP.setPadding(new Insets(5));
+
+        // Styling the file message box
+        VBox fileBox = new VBox(fileBP);
+        fileBox.setSpacing(5);
+        fileBox.setPadding(new Insets(10));
+        fileBox.setMaxWidth(400);
+        fileBox.setStyle(
+            "-fx-background-color: #2b3947;" + // darker WhatsApp-like
+            "-fx-background-radius: 16 16 4 16;" +
+            "-fx-border-radius: 16 16 4 16;" +
+            "-fx-border-color: #A5D6A7;" +
+            "-fx-border-width: 1;"
+        );
+
+        HBox wrapper = new HBox(fileBox);
+        wrapper.setAlignment(Pos.CENTER_RIGHT);
+        wrapper.setPadding(new Insets(5, 10, 5, 10));
 
         messagesPane.getChildren().add(wrapper);
         Platform.runLater(() -> {
-            messagesPane.layout(); 
-            chatScrollPane.setVvalue(1.0);
+            messagesPane.layout();
+            chatScrollPane.setVvalue(1.0); // scroll to bottom
         });
     }
 
-    private void addReceivedFileBox(File file){
+
+    private void addReceivedFileBox(File file) {
         String fileName = file.getName();
         long fileSizeBytes = file.length();
         String fileSize = humanReadableByteCountSI(fileSizeBytes);
@@ -575,92 +607,101 @@ public class ChatUI {
             fileType = Files.probeContentType(file.toPath());
         } catch (IOException e) {
             System.err.println("Error probing file type for " + fileName + ": " + e.getMessage());
-            fileType = "Unknown (Error)"; // Assign a default in case of error
+            fileType = "Unknown";
         }
 
-        // Icon (based on extension)
         String extension = "";
         int lastDotIndex = fileName.lastIndexOf(".");
         if (lastDotIndex > 0 && lastDotIndex < fileName.length() - 1) {
             extension = fileName.substring(lastDotIndex + 1).toLowerCase();
         }
-        String icon = switch (extension) {
-            case "pdf" -> "📄";
-            case "doc", "docx" -> "📝";
-            case "xls", "xlsx" -> "📊";
-            case "png", "jpg", "jpeg", "gif" -> "🖼️";
-            case "mp4", "avi", "mov", "mkv" -> "🎬";
-            default -> "📁";
+        String imagePath = switch (extension) {
+            case "pdf" -> "/images/PDF.png";
+            case "doc", "docx" -> "/images/DOCX.png";
+            case "xls", "xlsx" -> "/images/XLSX.png";
+            case "png", "jpg", "jpeg", "gif" -> "/images/IMAGE.png";
+            case "mp4", "avi", "mov", "mkv" -> "/images/VIDEO.png";
+            default -> "/images/FOLDER.png";
         };
 
-        Label iconLabel = new Label(icon);
-        iconLabel.setStyle("-fx-font-size: 40px;");
+        ImageView iconLabel = new ImageView(new Image(getClass().getResource(imagePath).toExternalForm()));
+        iconLabel.setFitWidth(40);
+        iconLabel.setFitHeight(40);
 
-        VBox fileBox = new VBox(5);
-        fileBox.setPadding(new Insets(10));
-        fileBox.setMaxWidth(400);
-        fileBox.setStyle(
-            "-fx-background-color: #DCF8C6;" + // light green (WhatsApp-like)
-            "-fx-background-radius: 16 16 4 16;" + // top-left, top-right, bottom-right, bottom-left
-            "-fx-border-radius: 16 16 4 16;" +
-            "-fx-border-color: #A5D6A7;" + // optional border
-            "-fx-border-width: 1;"
-        );
-        HBox wrapper = new HBox(fileBox);
-        wrapper.setAlignment(Pos.CENTER_LEFT); // Push to right side
-        wrapper.setPadding(new Insets(5, 10, 5, 10)); // Add spacing
-        HBox fileInfoWithIcon = new HBox(5);
         Label nameLabel = new Label(fileName);
-        nameLabel.setStyle("-fx-text-fill: black;");
+        nameLabel.setStyle("-fx-text-fill: white;");
 
         Label sizeLabel = new Label(fileSize);
-        sizeLabel.setStyle("-fx-text-fill: black;");
+        sizeLabel.setStyle("-fx-text-fill: white;");
 
-        Label typeLabel = new Label(fileType != null ? fileType : "Unknown");
-        typeLabel.setStyle("-fx-text-fill: black;");
+        Label typeLabel = new Label(fileType);
+        typeLabel.setStyle("-fx-text-fill: white;");
 
         VBox fileInfo = new VBox(nameLabel, sizeLabel, typeLabel);
+        fileInfo.setSpacing(5);
 
-        Button downloadButton = new Button("⬇");
-        downloadButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;");
-
-        // Set the action for the download button
-        downloadButton.setOnAction(e -> {
+        // Send button (download)
+        ImageView downloadButton = new ImageView(new Image(getClass().getResource("/images/DownloadButton.png").toExternalForm()));
+        downloadButton.setFitWidth(40);
+        downloadButton.setFitHeight(40);
+        downloadButton.setOnMouseClicked(e -> {
             Stage ownerStage = (Stage) downloadButton.getScene().getWindow();
-            if (ownerStage == null) {
-                ownerStage = new Stage();
-            }
+            if (ownerStage == null) ownerStage = new Stage();
 
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Save File");
-            fileChooser.setInitialFileName(file.getName()); // Suggest original file name
+            fileChooser.setInitialFileName(file.getName());
 
-            // Show save dialog and get the selected destination file
             File destinationFile = fileChooser.showSaveDialog(ownerStage);
-
             if (destinationFile != null) {
                 try {
-                    // Copy the attachment file to the chosen destination
                     Files.copy(file.toPath(), destinationFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                    System.out.println("File downloaded successfully to: " + destinationFile.getAbsolutePath());
+                    System.out.println("File downloaded to: " + destinationFile.getAbsolutePath());
                 } catch (IOException ex) {
-                    System.err.println("Error downloading file: " + ex.getMessage());
+                    System.err.println("Download failed: " + ex.getMessage());
                 }
             } else {
-                System.out.println("File download cancelled by user.");
+                System.out.println("Download cancelled.");
             }
         });
 
+        // Layout setup using BorderPane
+        VBox iconWrapper = new VBox(iconLabel);
+        iconWrapper.setPadding(new Insets(8, 5, 0, 0));
 
-        fileInfoWithIcon.getChildren().addAll(iconLabel, fileInfo, downloadButton);
-        fileBox.getChildren().addAll(fileInfoWithIcon);
+        VBox buttonWrapper = new VBox(downloadButton);
+        buttonWrapper.setPadding(new Insets(8, 0, 0, 5));
+
+        BorderPane fileBP = new BorderPane();
+        fileBP.setLeft(iconWrapper);
+        fileBP.setCenter(fileInfo);
+        fileBP.setRight(buttonWrapper);
+        fileBP.setPadding(new Insets(5));
+
+        // Styling the file message box
+        VBox fileBox = new VBox(fileBP);
+        fileBox.setSpacing(5);
+        fileBox.setPadding(new Insets(10));
+        fileBox.setMaxWidth(400);
+        fileBox.setStyle(
+            "-fx-background-color: #2b3947;" + // darker WhatsApp-like
+            "-fx-background-radius: 16 16 16 4;" +
+            "-fx-border-radius: 16 16 16 4;" +
+            "-fx-border-color: #ced2d5;" +
+            "-fx-border-width: 1;"
+        );
+
+        HBox wrapper = new HBox(fileBox);
+        wrapper.setAlignment(Pos.CENTER_LEFT);
+        wrapper.setPadding(new Insets(5, 10, 5, 10));
 
         messagesPane.getChildren().add(wrapper);
         Platform.runLater(() -> {
-            messagesPane.layout(); 
-            chatScrollPane.setVvalue(1.0);
+            messagesPane.layout();
+            chatScrollPane.setVvalue(1.0); // scroll to bottom
         });
     }
+
 
     public void startReceiving(String saveDirectory){
         new Thread(() -> {
@@ -674,7 +715,7 @@ public class ChatUI {
                             Platform.runLater(() -> {
                                 addReceivedMessage(message);
                                 try {
-                                    dbManager.insertTextMessage(receiver.getUserID(), sender.getUserID(), message);
+                                    dbManager.insertTextMessage(sender.getUserID(), receiver.getUserID(), message);
                                 } catch (SQLException e) {
                                     e.printStackTrace();
                                 }
@@ -685,7 +726,7 @@ public class ChatUI {
                             Platform.runLater(() -> {
                                 addReceivedFileBox(receivedFile);
                                 try {
-                                    dbManager.insertFileMessage(receiver.getUserID(), sender.getUserID(), receivedFile);
+                                    dbManager.insertFileMessage(sender.getUserID(), receiver.getUserID(), receivedFile);
                                 } catch (SQLException e) {
                                     e.printStackTrace();
                                 } catch (IOException e) {
@@ -745,12 +786,15 @@ public class ChatUI {
                             fos.write(buffer, 0, bytesRead);
                         }
                     }
+                    File finalFile = new File("newNamedFile.ext"); // replace with your desired name and extension
+                    boolean success = tempFile.renameTo(finalFile);
+                    if (!success) {
+                        System.err.println("Failed to rename file.");
+                    }
 
                     if (senderId == userAId) {
-                        File finalFile = tempFile;
                         Platform.runLater(() -> addFileBox(finalFile));
                     } else {
-                        File finalFile = tempFile;
                         Platform.runLater(() -> addReceivedFileBox(finalFile));
                     }
                 }
