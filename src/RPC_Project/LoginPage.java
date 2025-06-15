@@ -50,9 +50,9 @@ public class LoginPage {
         title.setFill(Color.web("#333"));
         title.setStyle("-fx-font-weight: bold;");
 
-        Label usernameLabel = new Label("Username");
-        TextField usernameField = new TextField();
-        styleTextField(usernameField);
+        Label emailLabel = new Label("Email");
+        TextField emailField = new TextField();
+        styleTextField(emailField);
 
         Label passwordLabel = new Label("Password");
         PasswordField passwordField = new PasswordField();
@@ -73,7 +73,7 @@ public class LoginPage {
         
 
         loginBtn.setOnAction(e -> {
-            String email = usernameField.getText().trim();
+            String email = emailField.getText().trim();
             String password = passwordField.getText();
             String senderEmail = "";
             String senderPassword = "";
@@ -96,8 +96,8 @@ public class LoginPage {
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     }
-                    receiver = new User(app, senderEmail, senderPassword);
-                    sender = new User(app, email, password);
+                    sender = new User(app, senderEmail, senderPassword);
+                    receiver = new User(app, email, password);
                     if (loginCallBack != null) {
                         loginCallBack.LoginSuccess(sender, receiver);
                     } else{
@@ -117,7 +117,7 @@ public class LoginPage {
 
         formPane.getChildren().addAll(
             title,
-            usernameLabel, usernameField,
+            emailLabel, emailField,
             passwordLabel, passwordField,
             errorLabel,
             loginBtn,

@@ -90,7 +90,7 @@ public class ChatUI {
         profileIcon.setOnMouseClicked(e -> app.showProfilePage());
         leftPane.getChildren().add(profileIcon);
 
-        Label chatLabel = new Label(receiver.getUsername());
+        Label chatLabel = new Label(receiver.getUsername().toUpperCase());
         chatLabel.setStyle(
             "-fx-text-fill: #ffffff;" +
             "-fx-font-weight: bold;"  + 
@@ -753,7 +753,7 @@ public class ChatUI {
                             Platform.runLater(() -> {
                                 addReceivedMessage(message, new Timestamp(System.currentTimeMillis()));
                                 try {
-                                    dbManager.insertTextMessage(sender.getUserID(), receiver.getUserID(), message);
+                                    dbManager.insertTextMessage(receiver.getUserID(), sender.getUserID(), message);
                                 } catch (SQLException e) {
                                     e.printStackTrace();
                                 }
@@ -764,7 +764,7 @@ public class ChatUI {
                             Platform.runLater(() -> {
                                 addReceivedFileBox(receivedFile, new Timestamp(System.currentTimeMillis()));
                                 try {
-                                    dbManager.insertFileMessage(sender.getUserID(), receiver.getUserID(), receivedFile);
+                                    dbManager.insertFileMessage(receiver.getUserID(), sender.getUserID(), receivedFile);
                                 } catch (SQLException e) {
                                     e.printStackTrace();
                                 } catch (IOException e) {
