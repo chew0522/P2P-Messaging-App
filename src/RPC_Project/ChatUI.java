@@ -87,10 +87,10 @@ public class ChatUI {
         ImageView profileIcon = new ImageView(new Image(getClass().getResource("/images/ProfileIcon.png").toExternalForm()));
         profileIcon.setFitWidth(50);
         profileIcon.setFitHeight(50);
-        profileIcon.setOnMouseClicked(e -> app.showProfilePage());
+        //profileIcon.setOnMouseClicked(e -> app.showProfilePage());
         leftPane.getChildren().add(profileIcon);
 
-        Label chatLabel = new Label(receiver.getUsername().toUpperCase());
+        Label chatLabel = new Label(sender.getUsername().toUpperCase());
         chatLabel.setStyle(
             "-fx-text-fill: #ffffff;" +
             "-fx-font-weight: bold;"  + 
