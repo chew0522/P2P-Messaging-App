@@ -827,7 +827,7 @@ public class ChatUI {
                             fos.write(buffer, 0, bytesRead);
                         }
                     }
-                    File finalFile = new File("newNamedFile.ext"); // replace with your desired name and extension
+                    File finalFile = new File(fileName); // replace with your desired name and extension
                     boolean success = tempFile.renameTo(finalFile);
                     Timestamp timestamp = rs.getTimestamp("timestamp");
                     if (!success) {
