@@ -393,10 +393,12 @@ public class ChatUI {
         sendButton.setFitWidth(40);
         sendButton.setFitHeight(40);
         sendButton.setOnMouseClicked(e -> {
+
             addFileBox(file, new Timestamp(System.currentTimeMillis()));
             try {
+                dbManager.insertFileMessage(sender.getUserID(), receiver.getUserID(), file);
                 client.sendFile(file.getAbsolutePath());
-            } catch (IOException e1) {
+            } catch (IOException | SQLException e1) {
                 e1.printStackTrace();
             }
 

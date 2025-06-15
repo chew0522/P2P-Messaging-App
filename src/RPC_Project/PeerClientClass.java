@@ -91,7 +91,7 @@ public class PeerClientClass {
         String filename = dis.readUTF();
         long fileSize = dis.readLong();
 
-        File saveFile = new File("received_" + filename);
+        File saveFile = new File(filename);
         try (FileOutputStream fos = new FileOutputStream(saveFile)) {
             byte[] buffer = new byte[4096];
             int read;
