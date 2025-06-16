@@ -38,7 +38,6 @@ public class Main extends Application {
             System.err.println("Application startup failed due to database connection error: " + e.getMessage());
             e.printStackTrace();
             // Show an alert to the user or exit the application gracefully
-            // Example:
             Alert alert = new Alert(AlertType.ERROR);
             alert.setTitle("Database Connection Error");
             alert.setHeaderText("Could not connect to the database.");
@@ -64,11 +63,11 @@ public class Main extends Application {
         IPAddressInput ipInputUI = new IPAddressInput(this, new ConnectionCallback() {
             @Override
             public void onConnectionSuccess(PeerClientClass server, PeerClientClass client) {
-                // When connection is successful, store the client and proceed
-                activeChatServer = server;
+                // When connection is successful, store the client and server, then proceed
+                activeChatServer = server; // Store the server in Main 
                 activeChatClient = client; // Store the client in Main
                 System.out.println("Callback: Connection successful! Navigating to Login Page.");
-                showLoginPage(); // <--- NEW: Call method to show Chat UI
+                showLoginPage(); // Call Login Page 
             }
 
             @Override
@@ -85,8 +84,8 @@ public class Main extends Application {
         LoginPage loginPage = new LoginPage(this, new LoginCallBack() {
             @Override
             public void LoginSuccess(User sender, User receiver){
-                activeSender = sender;
-                activeReceiver = receiver;
+                activeSender = sender;  // Store sender in Main 
+                activeReceiver = receiver;  // Store receiver in Main 
             }
 
             @Override

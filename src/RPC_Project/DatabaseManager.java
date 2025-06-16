@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class DatabaseManager {
 
@@ -21,11 +19,10 @@ public class DatabaseManager {
         this.conn = null;
     }
 
+    // Method to start connection to database 
     public void connect() throws SQLException {
         if (this.conn == null || this.conn.isClosed()) {
             try {
-                // Ensure the JDBC driver is loaded (optional for modern JDBC, but good practice)
-                // Class.forName("com.mysql.cj.jdbc.Driver"); // For MySQL, uncomment if needed
                 this.conn = DriverManager.getConnection(url, user, password);
                 System.out.println("Database connected successfully!");
             } catch (SQLException e) {
@@ -50,7 +47,7 @@ public class DatabaseManager {
         }
     }
 
-    // 1. Insert message
+    // Store text message content into database 
     public void insertTextMessage(int senderId, int receiverId, String message) throws SQLException {
         String sql = "INSERT INTO messages (sender_id, receiver_id, is_text, content) VALUES (?, ?, 1, ?)";
         
@@ -63,6 +60,7 @@ public class DatabaseManager {
         }
     }
 
+    // Store file message content into database 
     public void insertFileMessage(int senderId, int receiverId, File file) throws SQLException, IOException {
         String sql = "INSERT INTO messages (sender_id, receiver_id, is_text, file, file_name) VALUES (?, ?, 0, ?, ?)";
 
@@ -78,50 +76,7 @@ public class DatabaseManager {
         }
     }
 
-
-
-    // 2. Delete message by ID (optional use case)
-    public boolean deleteMessage(int messageId) throws SQLException {
-        String sql = "DELETE FROM messages WHERE message_id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, messageId);
-            return stmt.executeUpdate() > 0;
-        }
-    }
-
-    // 3. Retrieve chat history between two users
-    public List<String> getChatHistory(int userA, int userB) throws SQLException {
-        String sql = "SELECT sender_id, receiver_id, content, is_file, file_path, sent_at " +
-                     "FROM messages " +
-                     "WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?) " +
-                     "ORDER BY sent_at ASC";
-
-        List<String> history = new ArrayList<>();
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, userA);
-            stmt.setInt(2, userB);
-            stmt.setInt(3, userB);
-            stmt.setInt(4, userA);
-
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                int sender = rs.getInt("sender_id");
-                String content = rs.getString("content");
-                boolean isFile = "Y".equals(rs.getString("is_file"));
-                String filePath = rs.getString("file_path");
-                Timestamp timestamp = rs.getTimestamp("sent_at");
-
-                if (isFile) {
-                    history.add("[" + timestamp + "] User " + sender + " sent a file: " + filePath);
-                } else {
-                    history.add("[" + timestamp + "] User " + sender + ": " + content);
-                }
-            }
-        }
-        return history;
-    }
-
-    // 4. Register new user
+    // Register new user into database 
     public boolean registerUser(String email, String password, String username) throws SQLException {
         String sql = "INSERT INTO users (email, password, username) VALUES (?, ?, ?)";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -132,7 +87,7 @@ public class DatabaseManager {
         }
     }
 
-    // 5. Login validation
+    // Login validation
     public int getUserID(String email, String password) throws SQLException {
         String sql = "SELECT user_id FROM users WHERE email = ? AND password = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -173,6 +128,7 @@ public class DatabaseManager {
         }
     }
 
+    // For Sign Up Page to avoid duplicate username registered 
     public boolean checkUsernameExists(String username) throws SQLException {
         String sql = "SELECT COUNT(*) FROM users WHERE username = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -185,6 +141,7 @@ public class DatabaseManager {
         return false; // Should not be reached if query is successful
     }
 
+    // For Sign Up Page to avoid duplicate email registered
     public boolean checkEmailExists(String email) throws SQLException {
         String sql = "SELECT COUNT(*) FROM users WHERE email = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {

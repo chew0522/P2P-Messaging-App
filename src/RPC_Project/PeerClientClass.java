@@ -2,13 +2,11 @@ package RPC_Project;
 
 import java.io.*;
 import java.net.*;
-import java.util.function.Consumer;
 
 public class PeerClientClass {
     private Socket socket;
     private DataInputStream dis;
     private DataOutputStream dos;
-    private Thread listenerThread;
     private String filename;
     private final static int PORT = 5000;
 
@@ -18,12 +16,14 @@ public class PeerClientClass {
         this.dos = new DataOutputStream(socket.getOutputStream());
     }
 
+    // Connect client to server 
     public static PeerClientClass connectTo(String ip) throws IOException {
         Socket socket = new Socket(ip, PORT);
         System.out.println("Client connected to " + ip);
         return new PeerClientClass(socket);
     }
 
+    // Start server 
     public static PeerClientClass waitForConnection() throws IOException {
         ServerSocket serverSocket = new ServerSocket(PORT);
         Socket socket = serverSocket.accept();
@@ -31,35 +31,21 @@ public class PeerClientClass {
         return new PeerClientClass(socket);
     }
 
-    
-
-    public void startListening(Consumer<String> messageHandler) {
-        listenerThread = new Thread(() -> {
-            try {
-                while (true) {
-                    String msg = dis.readUTF();
-                    messageHandler.accept(msg);
-                }
-            } catch (IOException e) {
-                messageHandler.accept("Disconnected: " + e.getMessage());
-            }
-        });
-        listenerThread.setDaemon(true);
-        listenerThread.start();
-    }
-
+    // Close server or client connection 
     public void close() throws IOException {
         dis.close();
         dos.close();
         socket.close();
     }
 
+    // Send String message to server 
     public void sendText(String message) throws IOException {
         dos.writeUTF("TEXT");
         dos.writeUTF(message);
         System.out.println("Sent:" + message);
     }
 
+    // Send File message to server 
     public void sendFile(String filePath) throws IOException {
         File file = new File(filePath);
         if (!file.exists() || !file.isFile()) {
@@ -80,6 +66,7 @@ public class PeerClientClass {
         fis.close();
     }
 
+    // Receive String message from server 
     public String receiveText() throws IOException {
         String message = dis.readUTF();
         System.out.println("Received: " + message); 
@@ -87,6 +74,7 @@ public class PeerClientClass {
         return message;
     }
 
+    // Receive File message from server 
     public File receiveFile(String saveDirectory) throws IOException {
         String filename = dis.readUTF();
         long fileSize = dis.readLong();

@@ -41,8 +41,7 @@ public class IPAddressInput {
     }
 
     public void createScene() {
-        // --- UI Elements ---
-
+        // Create UI 
         Label ipLabel = new Label("Enter IP address:");
         ipLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
         ipLabel.setTextFill(Color.web("#ecf0f1"));

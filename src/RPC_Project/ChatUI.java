@@ -10,10 +10,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+
 import java.time.format.DateTimeFormatter;
 
 import javafx.application.Platform;
@@ -87,7 +85,6 @@ public class ChatUI {
         ImageView profileIcon = new ImageView(new Image(getClass().getResource("/images/ProfileIcon.png").toExternalForm()));
         profileIcon.setFitWidth(50);
         profileIcon.setFitHeight(50);
-        //profileIcon.setOnMouseClicked(e -> app.showProfilePage());
         leftPane.getChildren().add(profileIcon);
 
         Label chatLabel = new Label(sender.getUsername().toUpperCase());
@@ -96,6 +93,8 @@ public class ChatUI {
             "-fx-font-weight: bold;"  + 
             "-fx-font-size: 20px;"
         );
+
+        // Top bar with receiver's username on top 
         HBox topToolbar = new HBox(10);
         topToolbar.setPadding(new Insets(10));
         topToolbar.setStyle("-fx-background-color: #1e2d3b;");
@@ -111,6 +110,7 @@ public class ChatUI {
         scene = new Scene(root, 1000, 600);
     }
 
+    // Message Pane 
     public void setMessagePane(){
         BorderPane chatUIBox = new BorderPane();
         messagesPane = new VBox();
@@ -142,11 +142,10 @@ public class ChatUI {
         messageInput.setPromptText("Type a message...");
         HBox.setHgrow(messageInput, Priority.ALWAYS);
 
-        // Emoji picker button (using your emoji icon)
+        // Emoji picker button 
         emojiIcon.setOnMouseClicked(e -> showEmojiPopup(messageInput, emojiIcon));
 
-
-        // EmojiIcon
+        // AttachFileIcon
         attachFileIcon = new ImageView(new Image(getClass().getResource("/images/FileUploadIcon.png").toExternalForm()));
         attachFileIcon.setFitWidth(40);
         attachFileIcon.setFitHeight(40);
@@ -187,12 +186,9 @@ public class ChatUI {
 
         filePreviewPopup = new Popup();
         filePreviewPopup.getContent().add(filePreviewBox);
-        // Optional: Set auto-hide so clicking outside dismisses it
         filePreviewPopup.setAutoHide(true);
-        // Optional: Hide on focus lost to also dismiss it
         filePreviewPopup.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (!newVal && filePreviewPopup.isShowing()) {
-                // filePreviewPopup.hide(); // Uncomment if you want it to hide when focus leaves the popup
             }
         });
 
@@ -202,6 +198,7 @@ public class ChatUI {
         
     }
 
+    // Emoji PopUp 
     private void showEmojiPopup(TextField messageInput, Node anchorNode) {
         Popup emojiPopup = new Popup();
         emojiPopup.setAutoHide(true);
@@ -269,6 +266,7 @@ public class ChatUI {
 
     }
 
+    // Make the emoji clickable and insert into TextField after clicked 
     private Tab createEmojiTab(String categoryName, String[] emojis, TextField messageInput) {
         Tab tab = new Tab(categoryName);
         tab.setClosable(false);
@@ -317,20 +315,21 @@ public class ChatUI {
         return tab;
     }
 
+    // Trigger File Explorer 
     private void openFileExplorer() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Resource File");
 
         // Show open file dialog
-        File selectedFile = fileChooser.showOpenDialog(new Stage()); // You need a Stage here
+        File selectedFile = fileChooser.showOpenDialog(new Stage()); 
         if (selectedFile != null) {
             this.selectedFile = selectedFile;
             showFilePreview(selectedFile);
             System.out.println("Selected file: " + selectedFile.getAbsolutePath());
-            // Do something with the selected file, e.g., load its content
         }
     }
 
+    // convert large int into SI unit 
     private String humanReadableByteCountSI(long bytes) {
         int unit = 1000;
         if (bytes < unit) return bytes + " B";
@@ -339,6 +338,7 @@ public class ChatUI {
         return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
 
+    // File preview before sent 
     private void showFilePreview(File file) {
         // Clear previous preview
         filePreviewBox.getChildren().clear();
@@ -407,17 +407,13 @@ public class ChatUI {
             selectedFile = null;
         });
 
-        // BorderPane layout
         BorderPane preview = new BorderPane();
-        // Wrap iconLabel in a VBox with top padding
         VBox iconWrapper = new VBox(iconLabel);
         iconWrapper.setPadding(new Insets(8, 5, 0, 0)); // top, right, bottom, left
 
-        // Wrap sendButton in a VBox with top padding
         VBox buttonWrapper = new VBox(sendButton);
         buttonWrapper.setPadding(new Insets(8, 0, 0, 5));
 
-        // Apply to BorderPane
         preview.setLeft(iconWrapper);
         preview.setCenter(fileInfo);
         preview.setRight(buttonWrapper);
@@ -425,23 +421,23 @@ public class ChatUI {
         BorderPane.setMargin(fileInfo, new Insets(0, 10, 0, 0));
         preview.setPadding(new Insets(5));
 
-        // Finalize
         filePreviewBox.getChildren().add(preview);
         filePreviewBox.setSpacing(10);
         filePreviewBox.setVisible(true);
         filePreviewPopup.show(
-            primaryStage, // Owner window (needed for correct stacking and behavior)
+            primaryStage, 
             attachFileIcon.localToScreen(0, 0).getX(), // X coordinate
             attachFileIcon.localToScreen(0, 0).getY() - filePreviewBox.prefHeight(-1) - 50 // Y coordinate (above the button, with padding)
         );
     }
 
+    // Add Text Message Box into Message Pane 
     private void addMessage(String text, Timestamp timestamp) {
         VBox messageBox = new VBox(5);
         messageBox.setPadding(new Insets(10));
         messageBox.setMaxWidth(600);
         messageBox.setStyle(
-            "-fx-background-color: #DCF8C6;" + // Light green (like WhatsApp sender)
+            "-fx-background-color: #DCF8C6;" + // Light green 
             "-fx-background-radius: 16 16 4 16;" +
             "-fx-border-radius: 16 16 4 16;" +
             "-fx-border-color: #A5D6A7;" +
@@ -477,7 +473,7 @@ public class ChatUI {
         });
     }
 
-
+    // Add Received Text Message Box into Message Pane 
     private void addReceivedMessage(String text, Timestamp timestamp) {
         VBox messageBox = new VBox(5);
         
@@ -498,7 +494,7 @@ public class ChatUI {
         messageBox.setPadding(new Insets(10));
         messageBox.setMaxWidth(600);
         messageBox.setStyle(
-            "-fx-background-color: #ced2d5;" +  // Light gray (like WhatsApp receiver)
+            "-fx-background-color: #ced2d5;" +  // Light gray (for receiver)
             "-fx-background-radius: 16 16 16 4;" +
             "-fx-border-radius: 16 16 16 4;" +
             "-fx-border-width: 1;"
@@ -519,8 +515,7 @@ public class ChatUI {
         });
     }
 
-
-
+    // Add file box into Message Pane 
     private void addFileBox(File file, Timestamp timestamp) {
         String fileName = file.getName();
         long fileSizeBytes = file.length();
@@ -538,6 +533,8 @@ public class ChatUI {
         if (lastDotIndex > 0 && lastDotIndex < fileName.length() - 1) {
             extension = fileName.substring(lastDotIndex + 1).toLowerCase();
         }
+
+        // Handle message type and its corresponding icon 
         String imagePath = switch (extension) {
             case "pdf" -> "/images/PDF.png";
             case "doc", "docx" -> "/images/DOCX.png";
@@ -551,19 +548,19 @@ public class ChatUI {
         iconLabel.setFitWidth(40);
         iconLabel.setFitHeight(40);
 
-        Label nameLabel = new Label(fileName);
+        Label nameLabel = new Label(fileName);  // File name 
         nameLabel.setStyle("-fx-text-fill: white;");
 
-        Label sizeLabel = new Label(fileSize);
+        Label sizeLabel = new Label(fileSize);  // File size 
         sizeLabel.setStyle("-fx-text-fill: white;");
 
-        Label typeLabel = new Label(fileType);
+        Label typeLabel = new Label(fileType);  // File type 
         typeLabel.setStyle("-fx-text-fill: white;");
 
         VBox fileInfo = new VBox(nameLabel, sizeLabel, typeLabel);
         fileInfo.setSpacing(5);
 
-        // Send button (download)
+        // Download button 
         ImageView downloadButton = new ImageView(new Image(getClass().getResource("/images/DownloadButton.png").toExternalForm()));
         downloadButton.setFitWidth(40);
         downloadButton.setFitHeight(40);
@@ -613,7 +610,7 @@ public class ChatUI {
         fileBox.setPadding(new Insets(10));
         fileBox.setMaxWidth(400);
         fileBox.setStyle(
-            "-fx-background-color: #2b3947;" + // darker WhatsApp-like
+            "-fx-background-color: #2b3947;" + 
             "-fx-background-radius: 16 16 4 16;" +
             "-fx-border-radius: 16 16 4 16;" +
             "-fx-border-color: #A5D6A7;" +
@@ -631,7 +628,7 @@ public class ChatUI {
         });
     }
 
-
+    // Add received File Box into Message Pane 
     private void addReceivedFileBox(File file, Timestamp timestamp) {
         String fileName = file.getName();
         long fileSizeBytes = file.length();
@@ -674,7 +671,7 @@ public class ChatUI {
         VBox fileInfo = new VBox(nameLabel, sizeLabel, typeLabel);
         fileInfo.setSpacing(5);
 
-        // Send button (download)
+        // Download button 
         ImageView downloadButton = new ImageView(new Image(getClass().getResource("/images/DownloadButton.png").toExternalForm()));
         downloadButton.setFitWidth(40);
         downloadButton.setFitHeight(40);
@@ -724,7 +721,7 @@ public class ChatUI {
         fileBox.setPadding(new Insets(10));
         fileBox.setMaxWidth(400);
         fileBox.setStyle(
-            "-fx-background-color: #2b3947;" + // darker WhatsApp-like
+            "-fx-background-color: #2b3947;" + 
             "-fx-background-radius: 16 16 16 4;" +
             "-fx-border-radius: 16 16 16 4;" +
             "-fx-border-color: #ced2d5;" +
@@ -742,7 +739,7 @@ public class ChatUI {
         });
     }
 
-
+    // Thread to receive message at background 
     public void startReceiving(String saveDirectory){
         new Thread(() -> {
             try {
@@ -789,6 +786,7 @@ public class ChatUI {
         }).start();
     }
 
+    // Load Chat History everytime Message Pane is loaded 
     public void loadChatHistory(Connection conn, int userAId, int userBId) {
         String sql = "SELECT * FROM messages " +
                     "WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?) " +
