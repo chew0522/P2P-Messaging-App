@@ -17,7 +17,6 @@ A peer-to-peer (P2P) messaging application built with Java and JavaFX. It allows
 
 ## 📸 Screenshots
 
-*(Optional: Add actual screenshots in `/screenshots/` and update the links below)*
 
 | IP Entry | Login Page| Sign Up Page | Chat Interface |
 |----------|-----------|--------------|----------------|
