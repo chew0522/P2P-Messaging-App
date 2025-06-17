@@ -21,7 +21,7 @@ A peer-to-peer (P2P) messaging application built with Java and JavaFX. It allows
 
 | IP Entry | Login Page| Sign Up Page | Chat Interface |
 |----------|-----------|--------------|----------------|
-| ![IP](screenshots/IpAddressInput.png) | ![Login](screenshots/LoginPage.png) | ![SignUp](screenshots/SingUpPage.png) |![Chat UI](screenshots/CHatUI.png)
+| ![IP](screenshots/IPAddressInput.png) | ![Login](screenshots/LoginPage.png) | ![SignUp](screenshots/SingUpPage.png) |![Chat UI](screenshots/ChatUI.png)
 
 ---
 
