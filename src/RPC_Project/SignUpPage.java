@@ -46,7 +46,6 @@ public class SignUpPage {
         imagePane.getChildren().add(imageView);
 
         // === Right 1/3: Sign Up Form ===
-        
         VBox formPane = new VBox(12);
         formPane.setPrefWidth(350);
         formPane.setPadding(new Insets(40));
