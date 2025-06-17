@@ -1,18 +1,26 @@
-## Getting Started
+# 💬 JavaFX P2P Chat App with RPC
 
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
+This is a peer-to-peer (P2P) chat application built using Java and JavaFX. It features direct communication between two users over a local network using sockets (no centralized server), with file transfer support and a simple modern GUI.
 
-## Folder Structure
+## ✨ Features
 
-The workspace contains two folders by default, where:
+- 🔐 Login and Sign-Up Page UI *(mock validation, no DB connected yet)*
+- 🌐 IP-based P2P connection setup
+- 💬 Real-time text messaging
+- 📁 File sending (supports binary data transfer)
+- 🎨 JavaFX GUI with custom styling and interactive design
+- 🧵 Multithreaded listener for full-duplex communication
 
-- `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
+## 🚀 Getting Started
 
-Meanwhile, the compiled output files will be generated in the `bin` folder by default.
+### Prerequisites
+- Java 17+
+- JavaFX SDK (added to your module path)
+- IDE like Eclipse or IntelliJ
 
-> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
+### Running the App
 
-## Dependency Management
-
-The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/javafx-p2p-chat.git
+   cd javafx-p2p-chat
