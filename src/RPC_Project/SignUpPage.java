@@ -4,6 +4,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -103,6 +104,8 @@ public class SignUpPage {
                 } else {
                     errorLabel.setText("");
                     dbManager.registerUser(email, confirmPassword, username);
+                    showAlert(AlertType.INFORMATION, "Successfully regiesterd", "Registered!",
+                    "User is registered. Proceed to login...");
                     app.showLoginPage();
                 }
             } catch (SQLException e1) {
@@ -133,6 +136,14 @@ public class SignUpPage {
         
 
         scene = new Scene(root, 1000, 600);
+    }
+
+    private void showAlert(AlertType type, String title, String header, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 
     public Scene getScene() {
